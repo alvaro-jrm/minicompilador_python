@@ -125,9 +125,13 @@ code.st{padding:1px 4px;border-radius:3px;font-size:10px}
 .inst-tipo{font-weight:600;color:#2563eb;min-width:80px}
 .inst-nom{color:#374151;flex:1;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .inst-val{color:#059669;font-weight:600;font-family:monospace}
+table.sym-tbl{table-layout:auto;width:100%}
+table.sym-tbl td{white-space:nowrap;padding:5px 8px;border-bottom:1px solid #f3f4f6;font-family:monospace;font-size:11px}
+table.sym-tbl th{white-space:nowrap;background:#f8faff;padding:5px 8px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e8eaf0}
 table.sym-tbl td:first-child{font-weight:600;color:#4f46e5}
 table.sym-tbl tr.row-cos td:first-child{color:#b45309}
 table.sym-tbl tr.row-cal td:first-child{color:#059669}
+.sym-scroll{overflow-x:auto;width:100%}
 .json-out{background:#1e1e2e;border-radius:7px;padding:10px;font-family:monospace;font-size:11px;color:#cdd6f4;white-space:pre-wrap;min-height:48px;overflow-x:auto;border:1px solid #2a2a3e}
 .stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:7px}
 .stat-box{background:#f8faff;border-radius:7px;padding:9px;text-align:center;border:1px solid #e8eaf0}
@@ -686,10 +690,10 @@ function fillPanels(data) {
   // tabla símbolos
   var symRows = tabla.map(function(r){
     var cls = r.tipo==='insumo' ? '' : (r.tipo==='costo_empaque' ? 'row-cos' : 'row-cal');
-    return '<tr class="'+cls+'"><td>'+r.nombre+'</td><td>'+r.tipo+'</td><td style="max-width:90px;overflow:hidden;text-overflow:ellipsis">'+r.expresion+'</td><td><b>'+r.valor+'</b></td></tr>';
+    return '<tr class="'+cls+'"><td>'+r.nombre+'</td><td>'+r.tipo+'</td><td>'+r.expresion+'</td><td><b>'+r.valor+'</b></td></tr>';
   }).join('');
   document.getElementById('sym-live').innerHTML =
-    '<table class="atbl sym-tbl"><tr><th>Nombre</th><th>Tipo</th><th>Expresión</th><th>Valor</th></tr>' + symRows + '</table>';
+    '<div class="sym-scroll"><table class="sym-tbl"><tr><th>Nombre</th><th>Tipo</th><th>Expresión</th><th>Valor</th></tr>' + symRows + '</table></div>';
   // JSON out
   document.getElementById('json-out').textContent = JSON.stringify(data.resumen||{}, null, 2);
   // stats
@@ -775,64 +779,97 @@ function syntaxHL(json) {
 function drawASTsvg(tabla) {
   var wrap = document.getElementById('ast-wrap');
   if (!tabla || !tabla.length) {
-    wrap.innerHTML = '<p class="ph" style="text-align:center;padding:40px 0">Sin datos para mostrar</p>';
+    wrap.innerHTML = '<p style="text-align:center;color:#9ca3af;padding:40px 0;font-size:12px">Sin datos para mostrar</p>';
     return;
   }
-  var NW=100, NH=32, HGAP=20, VGAP=54;
+
+  // Dimensiones de nodo
+  var NW = 110, NH = 34, HGAP = 30, VGAP = 60;
   var n = tabla.length;
-  var W = Math.max(580, n * (NW + HGAP) + 60);
-  var rows = 4; // PROGRAMA / ASIGN / tipo+expr / operandos
-  var H = rows * (NH + VGAP) + 60;
 
-  function nd(cx,cy,w,h,lbl,fg,bg) {
-    return '<rect x="'+(cx-w/2)+'" y="'+(cy-h/2)+'" width="'+w+'" height="'+h+'" rx="5" fill="'+bg+'" stroke="#d1d5db" stroke-width="1"/>'
-         + '<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="'+fg+'">'+lbl+'</text>';
+  // Ancho mínimo por instrucción: necesita espacio para tipo + expr lado a lado
+  var slotW = NW * 2 + HGAP * 3;
+  var W = Math.max(700, n * slotW + 80);
+  // Altura: fila 0=PROGRAMA, 1=nombre_var, 2=tipo+expr, 3=operandos (solo calculos)
+  var hasCalc = tabla.some(function(r){ return r.tipo === 'calculo'; });
+  var H = (hasCalc ? 4 : 3) * (NH + VGAP) + 80;
+
+  function nd(cx, cy, w, h, lbl, fg, bg) {
+    // truncar label si es muy largo
+    var maxChars = Math.floor(w / 6.5);
+    var displayLbl = lbl.length > maxChars ? lbl.substring(0, maxChars-1) + '…' : lbl;
+    return '<rect x="'+(cx-w/2)+'" y="'+(cy-h/2)+'" width="'+w+'" height="'+h+'" rx="6"'
+         + ' fill="'+bg+'" stroke="#d1d5db" stroke-width="1.2"/>'
+         + '<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central"'
+         + ' font-size="11" font-weight="600" fill="'+fg+'" font-family="-apple-system,sans-serif">'
+         + displayLbl + '</text>';
   }
-  function ed(x1,y1,x2,y2) {
-    return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="#d1d5db" stroke-width="1"/>';
+  function ed(x1, y1, x2, y2) {
+    return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'"'
+         + ' stroke="#cbd5e1" stroke-width="1.2"/>';
   }
 
-  var svg = '<svg width="'+W+'" height="'+H+'" style="transform:scale('+astZoomFactor+');transform-origin:top left;display:block">';
-  var rootX = W/2, rootY = 24 + NH/2;
-  svg += nd(rootX, rootY, NW+20, NH, 'PROGRAMA', '#1e40af', '#dbeafe');
+  var scale = astZoomFactor;
+  var svgW = Math.round(W * scale);
+  var svgH = Math.round(H * scale);
 
-  var slotW = W / n;
+  var svg = '<svg width="'+svgW+'" height="'+svgH+'" viewBox="0 0 '+W+' '+H+'"'
+          + ' style="display:block;min-width:'+W+'px">';
+
+  // Nivel 0: nodo raíz PROGRAMA
+  var rootX = W / 2;
+  var rowY = [
+    NH/2 + 20,                        // fila 0: PROGRAMA
+    NH/2 + 20 + NH + VGAP,           // fila 1: nombre_variable
+    NH/2 + 20 + (NH + VGAP) * 2,     // fila 2: tipo | expr(op)
+    NH/2 + 20 + (NH + VGAP) * 3      // fila 3: operandos
+  ];
+
+  svg += nd(rootX, rowY[0], NW + 30, NH, 'PROGRAMA', '#1e40af', '#dbeafe');
+
   tabla.forEach(function(r, i) {
-    var cx = slotW * i + slotW/2;
-    var cy = rootY + NH/2 + VGAP + NH/2;
-    svg += ed(rootX, rootY+NH/2, cx, cy-NH/2);
-    svg += nd(cx, cy, NW, NH, r.nombre, '#374151', '#f3f4f6');
+    // Centro X de esta instrucción
+    var cx = 40 + i * slotW + slotW / 2;
 
-    var lx = cx - NW/2 - HGAP/2 - NW/2;
-    var rx = cx + NW/2 + HGAP/2 + NW/2;
-    var cy2 = cy + NH/2 + VGAP + NH/2;
-    svg += ed(cx, cy+NH/2, lx, cy2-NH/2);
-    svg += ed(cx, cy+NH/2, rx, cy2-NH/2);
+    // Fila 1: nombre_variable
+    svg += ed(rootX, rowY[0]+NH/2, cx, rowY[1]-NH/2);
+    svg += nd(cx, rowY[1], NW, NH, r.nombre, '#1e293b', '#f1f5f9');
 
+    // Fila 2: tipo (izq) | valor/expr (der)
     var tipoBg = r.tipo==='insumo' ? '#ede9fe' : r.tipo==='costo_empaque' ? '#fef3c7' : '#dcfce7';
     var tipoFg = r.tipo==='insumo' ? '#5b21b6' : r.tipo==='costo_empaque' ? '#92400e' : '#15803d';
-    svg += nd(lx, cy2, NW, NH, r.tipo, tipoFg, tipoBg);
 
-    var hasOp = /[+\-*\/]/.test(r.expresion);
-    if (hasOp && r.tipo === 'calculo') {
-      var op = (r.expresion.match(/([+\-*\/])/) || ['','='])[1];
-      svg += nd(rx, cy2, NW, NH, 'expr('+op+')', '#1d4ed8', '#dbeafe');
-      var parts = r.expresion.split(/[+\-*\/]/).map(function(s){ return s.trim(); });
+    var lx2 = cx - NW/2 - HGAP/2 - NW/2;
+    var rx2 = cx + NW/2 + HGAP/2 + NW/2;
+
+    svg += ed(cx, rowY[1]+NH/2, lx2, rowY[2]-NH/2);
+    svg += ed(cx, rowY[1]+NH/2, rx2, rowY[2]-NH/2);
+    svg += nd(lx2, rowY[2], NW, NH, r.tipo, tipoFg, tipoBg);
+
+    if (r.tipo === 'calculo') {
+      var opMatch = r.expresion.match(/([+\-*\/])/);
+      var op = opMatch ? opMatch[1] : '=';
+      svg += nd(rx2, rowY[2], NW, NH, 'expr(' + op + ')', '#1d4ed8', '#dbeafe');
+
+      // Fila 3: operandos izq y der
+      var parts = r.expresion.split(/[+\-*\/]/).map(function(s){ return s.trim(); }).filter(Boolean);
       if (parts.length >= 2) {
-        var cy3 = cy2 + NH/2 + VGAP + NH/2;
-        var lx3 = rx - NW/2 - 10;
-        var rx3 = rx + NW/2 + 10;
-        svg += ed(rx, cy2+NH/2, lx3, cy3-NH/2);
-        svg += ed(rx, cy2+NH/2, rx3, cy3-NH/2);
-        svg += nd(lx3, cy3, NW, NH, parts[0], '#374151', '#f9fafb');
-        svg += nd(rx3, cy3, NW, NH, parts[1], '#374151', '#f9fafb');
+        var lx3 = rx2 - NW/2 - 14;
+        var rx3 = rx2 + NW/2 + 14;
+        svg += ed(rx2, rowY[2]+NH/2, lx3, rowY[3]-NH/2);
+        svg += ed(rx2, rowY[2]+NH/2, rx3, rowY[3]-NH/2);
+        svg += nd(lx3, rowY[3], NW, NH, parts[0], '#334155', '#f8fafc');
+        svg += nd(rx3, rowY[3], NW, NH, parts[1], '#334155', '#f8fafc');
       }
     } else {
-      svg += nd(rx, cy2, NW, NH, String(r.expresion).substring(0,12), '#374151', '#f9fafb');
+      // insumo/costo: mostrar valor numérico
+      svg += nd(rx2, rowY[2], NW, NH, String(r.valor), '#334155', '#f8fafc');
     }
   });
+
   svg += '</svg>';
-  wrap.style.minHeight = H + 'px';
+  wrap.style.overflowX = 'auto';
+  wrap.style.overflowY = 'hidden';
   wrap.innerHTML = svg;
 }
 
