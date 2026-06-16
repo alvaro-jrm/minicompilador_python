@@ -97,9 +97,9 @@ nav{background:#fff;border-bottom:1px solid #e8eaf0;padding:0 32px;display:flex;
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* ── ANALYSIS GRID ── */
-.analysis-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.analysis-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:16px}
 @media(max-width:860px){.analysis-grid{grid-template-columns:1fr}}
-.a-card{border:1px solid #e8eaf0;border-radius:10px;padding:16px;background:#fff}
+.a-card{border:1px solid #e8eaf0;border-radius:10px;padding:16px;background:#fff;min-width:0;overflow:hidden}
 .a-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6}
 .a-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#374151}
 .a-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px}
@@ -555,8 +555,8 @@ footer{background:#fff;border-top:1px solid #e8eaf0;padding:20px 32px;display:fl
               <button class="ast-btn" onclick="resetZoom()">⛶</button>
             </div>
           </div>
-          <div id="ast-canvas-wrap">
-            <canvas id="ast-canvas" width="580" height="220"></canvas>
+          <div id="ast-canvas-wrap" style="overflow:auto;min-height:200px;background:#f8faff;border:1px solid #e8eaf0;border-radius:8px;padding:10px;margin-top:10px">
+            <p style="text-align:center;color:#9ca3af;font-size:12px;padding:40px 0">Compila un archivo para ver el árbol AST</p>
           </div>
         </div>
       </div>
@@ -668,7 +668,7 @@ function showPage(p){
 }
 
 /* ── ESTADO GLOBAL ── */
-let lastData=null, archivo=null, startTime=0, astZoom=1;
+let lastData=null, archivo=null, compilElapsed=0, astZoom=1, astZoomFactor=1;
 
 /* ── UPLOAD ── */
 function doDrag(e,on){e.preventDefault();document.getElementById('uploadZone').classList.toggle('drag',on)}
@@ -750,7 +750,7 @@ function resetSim(){
 /* ── COMPILAR ── */
 async function compilar(){
   if(!archivo)return;
-  startTime=Date.now();
+  const _t0=Date.now();
   document.getElementById('btnC').disabled=true;
   document.getElementById('btnT').style.display='none';
   document.getElementById('sp').style.display='block';
@@ -762,6 +762,7 @@ async function compilar(){
   try{
     const res=await fetch('/compile',{method:'POST',body:fd});
     const data=await res.json();
+    compilElapsed=Date.now()-_t0;
     lastData=data;
     if(data.status==='ok'||data.status==='ok_sin_persistencia'){
       setPhase('db'); fillCompilerPanels(data);
@@ -843,7 +844,7 @@ function renderResultsPage(){
   document.getElementById('res-success').style.display='block';
 
   const tabla=data.tabla_de_simbolos||[];
-  const elapsed=Date.now()-startTime;
+  const elapsed=compilElapsed;
 
   /* JSON full */
   document.getElementById('json-full').innerHTML=syntaxHL(JSON.stringify({
@@ -909,62 +910,104 @@ function syntaxHL(json){
     .replace(/:\s*(\d+\.?\d*)/g,': <span style="color:#fab387">$1</span>');
 }
 
-/* ── AST CANVAS ── */
+/* ── AST SVG DINÁMICO ── */
 function drawAST(tabla){
-  const canvas=document.getElementById('ast-canvas');
-  const ctx=canvas.getContext('2d');
-  const calcRows=tabla.filter(r=>r.tipo==='calculo');
-  if(!calcRows.length){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='#9ca3af'; ctx.font='12px sans-serif'; ctx.textAlign='center';
-    ctx.fillText('Sin expresiones de cálculo',canvas.width/2,canvas.height/2);
+  const wrap=document.getElementById('ast-canvas-wrap');
+  if(!tabla||!tabla.length){
+    wrap.innerHTML='<p style="text-align:center;color:#9ca3af;padding:40px;font-size:12px">Sin datos para mostrar</p>';
     return;
   }
-  const W=580, nodeW=90, nodeH=30, gapX=110, gapY=60;
-  const totalH=60+calcRows.length*(gapY+nodeH)+60;
-  canvas.width=W; canvas.height=Math.max(220,totalH);
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.scale(astZoomFactor,astZoomFactor);
-
-  /* root PROGRAMA */
-  const rootX=W/2, rootY=30;
-  drawNode(ctx,rootX,rootY,nodeW+20,nodeH,'PROGRAMA','#1e40af','#dbeafe');
-  calcRows.forEach((r,i)=>{
-    const cx=W/2+(i-(calcRows.length-1)/2)*gapX;
-    const cy=rootY+gapY;
-    /* línea root→asign */
-    line(ctx,rootX,rootY+nodeH/2,cx,cy-nodeH/2,'#9ca3af');
-    /* nodo ASIGN */
-    drawNode(ctx,cx,cy,nodeW,nodeH,`ASIGN_${i+1}`,'#374151','#f3f4f6');
-    /* hijos */
-    const lx=cx-gapX*0.45, rx=cx+gapX*0.45, cy2=cy+gapY;
-    line(ctx,cx,cy+nodeH/2,lx,cy2-nodeH/2,'#9ca3af');
-    line(ctx,cx,cy+nodeH/2,rx,cy2-nodeH/2,'#9ca3af');
-    drawNode(ctx,lx,cy2,nodeW-10,nodeH,r.tipo==='calculo'?'calculo':'insumo','#374151','#f3f4f6');
-    const op=r.expresion.match(/[+\-*/]/)?.[0]||'=';
-    drawNode(ctx,rx,cy2,nodeW-10,nodeH,`expr (${op})`,'#1d4ed8','#dbeafe');
+  // Construir árbol completo: PROGRAMA → cada instrucción → sus operandos
+  const NW=100,NH=32,HGAP=24,VGAP=56;
+  // calcular nodos por instrucción (tipo + nombre_var + cada token del valor)
+  function tokenize(expr){
+    // extraer identificadores y operadores de la expresión
+    return expr.split(/([+\-*\/])/).map(s=>s.trim()).filter(Boolean);
+  }
+  // cada instrucción tiene: nodo asignación (nombre), hijo izq=tipo, hijo der=expr tree
+  const instrNodes=tabla.map((r,i)=>{
+    const toks=tokenize(r.expresion);
+    return {r,i,toks};
   });
+  // calcular ancho total necesario
+  const minChildrenPerRow=instrNodes.length;
+  const totalW=Math.max(600, minChildrenPerRow*(NW+HGAP)+HGAP);
+  const maxDepth=3; // PROGRAMA / ASIGN / hijos
+  const totalH=(maxDepth+1)*(NH+VGAP)+60;
+
+  let svg=`<svg width="${totalW}" height="${totalH}" viewBox="0 0 ${totalW} ${totalH}" 
+    style="font-family:-apple-system,sans-serif;display:block;transform:scale(${astZoomFactor});transform-origin:top left">`;
+
+  // helpers SVG
+  function node(x,y,w,h,label,fg,bg,bold){
+    const rx2=x-w/2, ry2=y-h/2;
+    return `<rect x="${rx2}" y="${ry2}" width="${w}" height="${h}" rx="5" 
+      fill="${bg}" stroke="#d1d5db" stroke-width="1"/>
+      <text x="${x}" y="${y+1}" text-anchor="middle" dominant-baseline="central" 
+        font-size="10" font-weight="${bold?700:500}" fill="${fg}">${label}</text>`;
+  }
+  function edge(x1,y1,x2,y2){
+    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#d1d5db" stroke-width="1"/>`;
+  }
+
+  const rootX=totalW/2, rootY=30+NH/2;
+  // nodo raíz PROGRAMA
+  svg+=node(rootX,rootY,NW+20,NH,'PROGRAMA','#1e40af','#dbeafe',true);
+
+  // posición X de cada instrucción
+  const slotW=(totalW)/(instrNodes.length);
+  instrNodes.forEach(({r,i,toks})=>{
+    const cx=slotW*i+slotW/2;
+    const cy=rootY+(NH/2)+(VGAP)+NH/2;
+    // línea raíz → instrucción
+    svg+=edge(rootX,rootY+NH/2,cx,cy-NH/2);
+    // nodo instrucción = nombre variable
+    svg+=node(cx,cy,NW,NH,r.nombre,'#374151','#f3f4f6',true);
+
+    // hijos: tipo (izq) y expresión (der)
+    const lx=cx-NW/2-HGAP/2-NW/2;
+    const rx2=cx+NW/2+HGAP/2+NW/2;
+    const cy2=cy+(NH/2)+VGAP+NH/2;
+
+    const tipoBg=r.tipo==='insumo'?'#ede9fe':r.tipo==='costo_empaque'?'#fef3c7':'#dcfce7';
+    const tipoFg=r.tipo==='insumo'?'#5b21b6':r.tipo==='costo_empaque'?'#92400e':'#15803d';
+    svg+=edge(cx,cy+NH/2,lx,cy2-NH/2);
+    svg+=node(lx,cy2,NW,NH,r.tipo,tipoFg,tipoBg,false);
+
+    // expresión: si tiene operador, mostrar árbol con op en centro
+    const hasOp=/[+\-*\/]/.test(r.expresion);
+    if(hasOp && r.tipo==='calculo'){
+      const op=(r.expresion.match(/([+\-*\/])/)||['='])[1];
+      const parts=r.expresion.split(/[+\-*\/]/).map(s=>s.trim());
+      svg+=edge(cx,cy+NH/2,rx2,cy2-NH/2);
+      svg+=node(rx2,cy2,NW,NH,`expr (${op})`,'#1d4ed8','#dbeafe',false);
+      // sub-hijos del operador
+      if(parts.length>=2){
+        const cy3=cy2+(NH/2)+VGAP+NH/2;
+        const lx3=rx2-NW/2-8;
+        const rx3=rx2+NW/2+8;
+        svg+=edge(rx2,cy2+NH/2,lx3,cy3-NH/2);
+        svg+=edge(rx2,cy2+NH/2,rx3,cy3-NH/2);
+        svg+=node(lx3,cy3,NW,NH,parts[0],'#374151','#f9fafb',false);
+        svg+=node(rx3,cy3,NW,NH,parts[1],'#374151','#f9fafb',false);
+      }
+    } else {
+      // valor literal directo
+      svg+=edge(cx,cy+NH/2,rx2,cy2-NH/2);
+      svg+=node(rx2,cy2,NW,NH,r.expresion,'#374151','#f9fafb',false);
+    }
+  });
+
+  svg+='</svg>';
+  // ajustar altura del wrapper al contenido
+  const realH=maxDepth*2*(NH+VGAP)+60;
+  wrap.style.minHeight=realH+'px';
+  wrap.innerHTML=svg;
 }
-function drawNode(ctx,cx,cy,w,h,label,fg,bg){
-  const x=cx-w/2, y=cy-h/2;
-  ctx.fillStyle=bg; ctx.strokeStyle='#d1d5db'; ctx.lineWidth=1;
-  roundRect(ctx,x,y,w,h,4);
-  ctx.fillStyle=fg; ctx.font='600 10px -apple-system,sans-serif'; ctx.textAlign='center';
-  ctx.fillText(label,cx,cy+4);
+function zoomAST(f){
+  astZoomFactor=Math.max(0.3,Math.min(2,astZoomFactor*f));
+  if(lastData) drawAST(lastData.tabla_de_simbolos||[]);
 }
-function line(ctx,x1,y1,x2,y2,color){
-  ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=1;
-  ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
-}
-function roundRect(ctx,x,y,w,h,r){
-  ctx.beginPath();
-  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
-  ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
-  ctx.lineTo(x+r,y+h); ctx.quadraticCurveTo(x,y+h,x,y+h-r);
-  ctx.lineTo(x,y+r); ctx.quadraticCurveTo(x,y,x+r,y);
-  ctx.closePath(); ctx.fill(); ctx.stroke();
-}
-function zoomAST(f){astZoomFactor*=f; if(lastData) drawAST(lastData.tabla_de_simbolos||[])}
 function resetZoom(){astZoomFactor=1; if(lastData) drawAST(lastData.tabla_de_simbolos||[])}
 
 /* ── EXPORT ── */
