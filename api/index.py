@@ -151,7 +151,7 @@ table.sym-tbl tr.row-cal td:first-child{color:#059669}
 .panel-title{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:700}
 .panel-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:4px;background:#f3f4f6;color:#6b7280;letter-spacing:.4px}
 .cfg-full{background:#f8faff;border:1px solid #e8eaf0;border-radius:8px;padding:14px;font-family:monospace;font-size:12px;line-height:2;overflow-x:auto;white-space:pre}
-#ast-wrap{background:#f8faff;border:1px solid #e8eaf0;border-radius:8px;overflow:auto;min-height:180px;padding:8px;margin-top:8px}
+#ast-wrap{background:#f8faff;border:1px solid #e8eaf0;border-radius:8px;overflow:auto;height:320px;max-height:320px;padding:8px;margin-top:8px;cursor:grab}
 .ast-controls{display:flex;gap:5px}
 .ast-btn{padding:4px 9px;border-radius:6px;border:1px solid #e5e7eb;background:#f9fafb;cursor:pointer;font-size:11px}
 .json-dark{background:#1e1e2e;border-radius:12px;padding:18px;border:1px solid #2a2a3e}
@@ -783,93 +783,112 @@ function drawASTsvg(tabla) {
     return;
   }
 
-  // Dimensiones de nodo
-  var NW = 110, NH = 34, HGAP = 30, VGAP = 60;
+  // Constantes de layout
+  var NW = 120, NH = 32, VGAP = 56;
+  // Cada instrucción ocupa un "slot" fijo en X.
+  // El slot debe contener: [tipo] [gap] [valor/expr] con margen entre instrucciones.
+  // Para cálculos también hay operandos debajo de expr, cada uno de NW.
+  // Slot mínimo = NW*2 + 3 gaps de 20px + 30px margen entre instrucciones
+  var SLOT = NW * 2 + 20 * 3 + 30;
   var n = tabla.length;
+  var PAD = 40;
+  var W = Math.max(800, n * SLOT + PAD * 2);
 
-  // Ancho mínimo por instrucción: necesita espacio para tipo + expr lado a lado
-  var slotW = NW * 2 + HGAP * 3;
-  var W = Math.max(700, n * slotW + 80);
-  // Altura: fila 0=PROGRAMA, 1=nombre_var, 2=tipo+expr, 3=operandos (solo calculos)
+  // Filas Y (centros)
+  var Y0 = 30 + NH/2;                  // PROGRAMA
+  var Y1 = Y0 + NH + VGAP;             // nombre_variable
+  var Y2 = Y1 + NH + VGAP;             // tipo  |  valor/expr(op)
+  var Y3 = Y2 + NH + VGAP;             // operando_izq | operando_der  (solo calculos)
   var hasCalc = tabla.some(function(r){ return r.tipo === 'calculo'; });
-  var H = (hasCalc ? 4 : 3) * (NH + VGAP) + 80;
+  var H = (hasCalc ? Y3 + NH/2 + 30 : Y2 + NH/2 + 30);
 
-  function nd(cx, cy, w, h, lbl, fg, bg) {
-    // truncar label si es muy largo
-    var maxChars = Math.floor(w / 6.5);
-    var displayLbl = lbl.length > maxChars ? lbl.substring(0, maxChars-1) + '…' : lbl;
-    return '<rect x="'+(cx-w/2)+'" y="'+(cy-h/2)+'" width="'+w+'" height="'+h+'" rx="6"'
-         + ' fill="'+bg+'" stroke="#d1d5db" stroke-width="1.2"/>'
-         + '<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central"'
-         + ' font-size="11" font-weight="600" fill="'+fg+'" font-family="-apple-system,sans-serif">'
-         + displayLbl + '</text>';
+  // ── helpers SVG ──
+  function rect(cx, cy, w, h, fg, bg, radius) {
+    radius = radius || 6;
+    return '<rect x="'+(cx-w/2)+'" y="'+(cy-h/2)+'" width="'+w+'" height="'+h
+         + '" rx="'+radius+'" fill="'+bg+'" stroke="#d1d5db" stroke-width="1.2"/>';
   }
-  function ed(x1, y1, x2, y2) {
-    return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'"'
-         + ' stroke="#cbd5e1" stroke-width="1.2"/>';
+  function txt(cx, cy, lbl, fg, fs, fw) {
+    fs = fs || 11; fw = fw || 600;
+    // Calcular cuántos chars caben (aprox 6.2px por char a 11px)
+    var maxCh = Math.floor((NW - 12) / (fs * 0.62));
+    var s = String(lbl);
+    if (s.length > maxCh) s = s.substring(0, maxCh - 1) + '…';
+    return '<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central"'
+         + ' font-size="'+fs+'" font-weight="'+fw+'" fill="'+fg+'"'
+         + ' font-family="-apple-system,BlinkMacSystemFont,sans-serif">'+s+'</text>';
+  }
+  function node(cx, cy, w, lbl, fg, bg) {
+    return rect(cx, cy, w, NH, fg, bg) + txt(cx, cy, lbl, fg);
+  }
+  function edge(x1, y1, x2, y2) {
+    return '<line x1="'+Math.round(x1)+'" y1="'+Math.round(y1)
+         + '" x2="'+Math.round(x2)+'" y2="'+Math.round(y2)
+         + '" stroke="#cbd5e1" stroke-width="1.2"/>';
   }
 
-  var scale = astZoomFactor;
-  var svgW = Math.round(W * scale);
-  var svgH = Math.round(H * scale);
-
-  var svg = '<svg width="'+svgW+'" height="'+svgH+'" viewBox="0 0 '+W+' '+H+'"'
-          + ' style="display:block;min-width:'+W+'px">';
-
-  // Nivel 0: nodo raíz PROGRAMA
   var rootX = W / 2;
-  var rowY = [
-    NH/2 + 20,                        // fila 0: PROGRAMA
-    NH/2 + 20 + NH + VGAP,           // fila 1: nombre_variable
-    NH/2 + 20 + (NH + VGAP) * 2,     // fila 2: tipo | expr(op)
-    NH/2 + 20 + (NH + VGAP) * 3      // fila 3: operandos
-  ];
+  var svg = '<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'"'
+          + ' xmlns="http://www.w3.org/2000/svg"'
+          + ' style="display:block;font-family:-apple-system,sans-serif">';
 
-  svg += nd(rootX, rowY[0], NW + 30, NH, 'PROGRAMA', '#1e40af', '#dbeafe');
+  // ── Nodo raíz PROGRAMA ──
+  svg += node(rootX, Y0, NW + 40, 'PROGRAMA', '#1e40af', '#dbeafe');
 
   tabla.forEach(function(r, i) {
-    // Centro X de esta instrucción
-    var cx = 40 + i * slotW + slotW / 2;
+    // Centro X del slot de esta instrucción
+    var cx = PAD + i * SLOT + SLOT / 2;
 
-    // Fila 1: nombre_variable
-    svg += ed(rootX, rowY[0]+NH/2, cx, rowY[1]-NH/2);
-    svg += nd(cx, rowY[1], NW, NH, r.nombre, '#1e293b', '#f1f5f9');
+    // Dentro del slot: tipo a la izquierda, valor/expr a la derecha
+    // Cada uno centrado en su mitad del slot (con gap en medio)
+    var GAP = 20;
+    var lx = cx - GAP/2 - NW/2;   // centro del nodo izquierdo (tipo)
+    var rx = cx + GAP/2 + NW/2;   // centro del nodo derecho (valor/expr)
 
-    // Fila 2: tipo (izq) | valor/expr (der)
+    // ── Fila 1: nombre_variable ──
+    svg += edge(rootX, Y0 + NH/2, cx, Y1 - NH/2);
+    svg += node(cx, Y1, NW, r.nombre, '#1e293b', '#f1f5f9');
+
+    // ── Fila 2: tipo | valor ──
     var tipoBg = r.tipo==='insumo' ? '#ede9fe' : r.tipo==='costo_empaque' ? '#fef3c7' : '#dcfce7';
     var tipoFg = r.tipo==='insumo' ? '#5b21b6' : r.tipo==='costo_empaque' ? '#92400e' : '#15803d';
 
-    var lx2 = cx - NW/2 - HGAP/2 - NW/2;
-    var rx2 = cx + NW/2 + HGAP/2 + NW/2;
+    svg += edge(cx, Y1 + NH/2, lx, Y2 - NH/2);
+    svg += node(lx, Y2, NW, r.tipo, tipoFg, tipoBg);
 
-    svg += ed(cx, rowY[1]+NH/2, lx2, rowY[2]-NH/2);
-    svg += ed(cx, rowY[1]+NH/2, rx2, rowY[2]-NH/2);
-    svg += nd(lx2, rowY[2], NW, NH, r.tipo, tipoFg, tipoBg);
+    svg += edge(cx, Y1 + NH/2, rx, Y2 - NH/2);
 
     if (r.tipo === 'calculo') {
-      var opMatch = r.expresion.match(/([+\-*\/])/);
-      var op = opMatch ? opMatch[1] : '=';
-      svg += nd(rx2, rowY[2], NW, NH, 'expr(' + op + ')', '#1d4ed8', '#dbeafe');
+      var opM = r.expresion.match(/([+\-*\/])/);
+      var op  = opM ? opM[1] : '?';
+      svg += node(rx, Y2, NW, 'expr(' + op + ')', '#1d4ed8', '#dbeafe');
 
-      // Fila 3: operandos izq y der
+      // ── Fila 3: operandos ──
       var parts = r.expresion.split(/[+\-*\/]/).map(function(s){ return s.trim(); }).filter(Boolean);
+      // Los operandos se colocan debajo de rx, separados
+      var SEP = NW + 16;
+      var ox1 = rx - SEP/2;
+      var ox2 = rx + SEP/2;
+      if (parts.length >= 1) {
+        svg += edge(rx, Y2 + NH/2, ox1, Y3 - NH/2);
+        svg += node(ox1, Y3, NW, parts[0], '#334155', '#f8fafc');
+      }
       if (parts.length >= 2) {
-        var lx3 = rx2 - NW/2 - 14;
-        var rx3 = rx2 + NW/2 + 14;
-        svg += ed(rx2, rowY[2]+NH/2, lx3, rowY[3]-NH/2);
-        svg += ed(rx2, rowY[2]+NH/2, rx3, rowY[3]-NH/2);
-        svg += nd(lx3, rowY[3], NW, NH, parts[0], '#334155', '#f8fafc');
-        svg += nd(rx3, rowY[3], NW, NH, parts[1], '#334155', '#f8fafc');
+        svg += edge(rx, Y2 + NH/2, ox2, Y3 - NH/2);
+        svg += node(ox2, Y3, NW, parts[1], '#334155', '#f8fafc');
       }
     } else {
-      // insumo/costo: mostrar valor numérico
-      svg += nd(rx2, rowY[2], NW, NH, String(r.valor), '#334155', '#f8fafc');
+      // insumo/costo: valor numérico directamente
+      svg += node(rx, Y2, NW, String(r.valor), '#334155', '#f8fafc');
     }
   });
 
   svg += '</svg>';
+
+  // El wrapper tiene altura fija + scroll horizontal
   wrap.style.overflowX = 'auto';
-  wrap.style.overflowY = 'hidden';
+  wrap.style.overflowY = 'auto';
+  wrap.style.maxHeight = '320px';
   wrap.innerHTML = svg;
 }
 
