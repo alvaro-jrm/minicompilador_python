@@ -302,12 +302,13 @@ footer{background:#fff;border-top:1px solid #e8eaf0;padding:20px 32px;display:fl
       <div class="sec-num">2</div>
       <h2 class="sec-title">Ingreso de datos — cargar archivo</h2>
     </div>
-    <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()"
-         ondragover="doDrag(event,true)" ondragleave="doDrag(event,false)" ondrop="doDrop(event)">
-      <div class="upload-icon">☁️</div>
-      <h3>Haz clic o arrastra tu archivo aquí</h3>
-      <p>Formatos: .xlsx · .xls · .csv — máximo 10 MB</p>
-      <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" onchange="pickFile(this.files[0])">
+    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="pickFile(this.files[0])">
+    <div class="upload-zone" id="uploadZone"
+         ondragover="doDrag(event,true)" ondragleave="doDrag(event,false)" ondrop="doDrop(event)"
+         onclick="document.getElementById('fileInput').click()">
+      <div id="upload-icon" class="upload-icon">☁️</div>
+      <h3 id="upload-title">Haz clic o arrastra tu archivo aquí</h3>
+      <p id="upload-sub">Formatos: .xlsx · .xls · .csv — máximo 10 MB</p>
     </div>
     <div class="prog-wrap" id="progWrap">
       <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
@@ -341,80 +342,33 @@ footer{background:#fff;border-top:1px solid #e8eaf0;padding:20px 32px;display:fl
         <p style="font-size:11px;color:#6b7280;margin-bottom:5px">Tokens detectados</p>
         <div id="tokens-live"><span class="live-placeholder">Carga un archivo…</span></div>
 
-        <p style="font-size:11px;font-weight:600;color:#374151;margin:10px 0 5px">AFD — Autómata Finito Determinista</p>
-        <div class="afd-wrap">
-          <svg width="100%" viewBox="0 0 420 280" role="img">
-            <title>AFD Lexer</title>
-            <defs>
-              <marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-                <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </marker>
-            </defs>
-            <line x1="20" y1="138" x2="48" y2="138" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#ar)" fill="none"/>
-            <polygon points="14,134 14,142 6,138" fill="#9ca3af"/>
-            <!-- q0 -->
-            <g class="state-c" onclick="qs('q0')">
-              <circle cx="74" cy="138" r="24" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
-              <circle cx="74" cy="138" r="18" fill="none" stroke="#2563eb" stroke-width="1" stroke-dasharray="3 2"/>
-              <text x="74" y="138" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:700;fill:#1e40af">q0</text>
-            </g>
-            <!-- q1 -->
-            <g class="state-c" onclick="qs('q1')">
-              <circle cx="200" cy="60" r="24" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
-              <text x="200" y="60" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:700;fill:#15803d">q1</text>
-            </g>
-            <text x="200" y="92" text-anchor="middle" style="font-size:9px;fill:#6b7280">ident/kw</text>
-            <!-- q2 -->
-            <g class="state-c" onclick="qs('q2')">
-              <circle cx="200" cy="145" r="24" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
-              <text x="200" y="145" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:700;fill:#5b21b6">q2</text>
-            </g>
-            <text x="200" y="177" text-anchor="middle" style="font-size:9px;fill:#6b7280">int</text>
-            <!-- q3 -->
-            <g class="state-c" onclick="qs('q3')">
-              <circle cx="200" cy="225" r="24" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/>
-              <text x="200" y="225" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:700;fill:#5b21b6">q3</text>
-            </g>
-            <text x="200" y="257" text-anchor="middle" style="font-size:9px;fill:#6b7280">float</text>
-            <!-- q4 op -->
-            <g class="state-c" onclick="qs('q4')">
-              <circle cx="340" cy="80" r="24" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
-              <circle cx="340" cy="80" r="18" fill="none" stroke="#d97706" stroke-width="1"/>
-              <text x="340" y="80" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:700;fill:#92400e">q4</text>
-            </g>
-            <text x="340" y="112" text-anchor="middle" style="font-size:9px;fill:#6b7280">op ✓</text>
-            <!-- q5 accept -->
-            <g class="state-c" onclick="qs('q5')">
-              <circle cx="340" cy="190" r="24" fill="#dcfce7" stroke="#15803d" stroke-width="1.5"/>
-              <circle cx="340" cy="190" r="18" fill="none" stroke="#15803d" stroke-width="1"/>
-              <text x="340" y="190" text-anchor="middle" dominant-baseline="central" style="font-size:12px;font-weight:700;fill:#15803d">q5</text>
-            </g>
-            <text x="340" y="222" text-anchor="middle" style="font-size:9px;fill:#6b7280">token ✓</text>
-            <!-- qERR -->
-            <g class="state-c" onclick="qs('qe')">
-              <circle cx="74" cy="240" r="20" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
-              <text x="74" y="240" text-anchor="middle" dominant-baseline="central" style="font-size:9px;font-weight:700;fill:#b91c1c">qERR</text>
-            </g>
-            <!-- arrows -->
-            <path d="M94 126 Q144 88 176 68" fill="none" stroke="#15803d" stroke-width="1.2" marker-end="url(#ar)" opacity=".8"/>
-            <text x="127" y="82" style="font-size:9px;fill:#15803d">letra/_</text>
-            <line x1="98" y1="138" x2="176" y2="143" fill="none" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#ar)" opacity=".8"/>
-            <text x="136" y="133" style="font-size:9px;fill:#7c3aed">dígito</text>
-            <path d="M90 150 Q130 200 176 220" fill="none" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#ar)" opacity=".7"/>
-            <path d="M92 124 Q200 50 316 74" fill="none" stroke="#d97706" stroke-width="1.2" marker-end="url(#ar)" opacity=".8"/>
-            <text x="204" y="46" style="font-size:9px;fill:#d97706">+−*/( )</text>
-            <line x1="74" y1="162" x2="74" y2="220" fill="none" stroke="#dc2626" stroke-width="1.2" marker-end="url(#ar)" opacity=".7" stroke-dasharray="3 2"/>
-            <text x="58" y="196" style="font-size:9px;fill:#dc2626">otro</text>
-            <path d="M188 36 Q196 16 210 28 Q220 40 212 54" fill="none" stroke="#15803d" stroke-width="1.2" marker-end="url(#ar)" opacity=".7"/>
-            <text x="218" y="18" style="font-size:9px;fill:#15803d">letra/díg/_</text>
-            <path d="M188 122 Q196 106 210 114 Q218 124 210 136" fill="none" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#ar)" opacity=".7"/>
-            <path d="M188 204 Q196 190 210 196 Q218 206 210 218" fill="none" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#ar)" opacity=".7"/>
-            <line x1="200" y1="169" x2="200" y2="201" fill="none" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#ar)" opacity=".8"/>
-            <text x="210" y="187" style="font-size:9px;fill:#7c3aed">.</text>
-            <path d="M224 64 Q282 100 316 176" fill="none" stroke="#15803d" stroke-width="1.2" marker-end="url(#ar)" opacity=".7"/>
-            <text x="290" y="110" style="font-size:9px;fill:#15803d">otro</text>
-            <line x1="224" y1="148" x2="316" y2="185" fill="none" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#ar)" opacity=".7"/>
-            <path d="M224 224 Q278 224 316 198" fill="none" stroke="#7c3aed" stroke-width="1.2" marker-end="url(#ar)" opacity=".7"/>
+        <p style="font-size:11px;font-weight:600;color:#374151;margin:10px 0 5px">AFD — Autómata Finito Determinista <span style="font-size:10px;color:#2563eb;font-weight:400">(estados activos según el archivo)</span></p>
+        <div class="afd-wrap" id="afd-dynamic">
+          <!-- Se genera dinámicamente al compilar -->
+          <svg width="100%" viewBox="0 0 420 290" role="img">
+            <defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+            <line x1="20" y1="143" x2="48" y2="143" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#ar)"/>
+            <polygon points="14,139 14,147 6,143" fill="#9ca3af"/>
+            <g style="cursor:pointer" onclick="qs('q0')"><circle cx="74" cy="143" r="24" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1"/><circle cx="74" cy="143" r="18" fill="none" stroke="#9ca3af" stroke-width="1" stroke-dasharray="3 2"/><text x="74" y="143" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="#6b7280">q0</text></g>
+            <text x="74" y="175" text-anchor="middle" font-size="9" fill="#9ca3af">inicio</text>
+            <g style="cursor:pointer" onclick="qs('q1')"><circle cx="200" cy="65" r="24" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1"/><text x="200" y="65" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="#9ca3af">q1</text></g>
+            <text x="200" y="97" text-anchor="middle" font-size="9" fill="#9ca3af">ident/kw</text>
+            <g style="cursor:pointer" onclick="qs('q2')"><circle cx="200" cy="150" r="24" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1"/><text x="200" y="150" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="#9ca3af">q2</text></g>
+            <text x="200" y="182" text-anchor="middle" font-size="9" fill="#9ca3af">int</text>
+            <g style="cursor:pointer" onclick="qs('q3')"><circle cx="200" cy="232" r="24" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1"/><text x="200" y="232" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="#9ca3af">q3</text></g>
+            <text x="200" y="264" text-anchor="middle" font-size="9" fill="#9ca3af">float</text>
+            <g style="cursor:pointer" onclick="qs('q4')"><circle cx="340" cy="85" r="24" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1"/><circle cx="340" cy="85" r="18" fill="none" stroke="#9ca3af" stroke-width="1"/><text x="340" y="85" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="#9ca3af">q4</text></g>
+            <text x="340" y="117" text-anchor="middle" font-size="9" fill="#9ca3af">op</text>
+            <g style="cursor:pointer" onclick="qs('q5')"><circle cx="340" cy="195" r="24" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1"/><circle cx="340" cy="195" r="18" fill="none" stroke="#9ca3af" stroke-width="1"/><text x="340" y="195" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="#9ca3af">q5</text></g>
+            <text x="340" y="227" text-anchor="middle" font-size="9" fill="#9ca3af">token ✓</text>
+            <g style="cursor:pointer" onclick="qs('qe')"><circle cx="74" cy="248" r="20" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/><text x="74" y="248" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="700" fill="#b91c1c">qERR</text></g>
+            <path d="M94 130 Q144 92 176 72" fill="none" stroke="#e5e7eb" stroke-width="1" marker-end="url(#ar)"/>
+            <line x1="98" y1="143" x2="176" y2="148" fill="none" stroke="#e5e7eb" stroke-width="1" marker-end="url(#ar)"/>
+            <path d="M92 128 Q200 54 316 78" fill="none" stroke="#e5e7eb" stroke-width="1" marker-end="url(#ar)"/>
+            <line x1="74" y1="167" x2="74" y2="228" stroke="#dc2626" stroke-width="1.2" marker-end="url(#ar)" stroke-dasharray="3 2" opacity=".5"/>
+            <path d="M224 68 Q284 104 316 180" fill="none" stroke="#e5e7eb" stroke-width="1" marker-end="url(#ar)"/>
+            <line x1="224" y1="152" x2="316" y2="188" stroke="#e5e7eb" stroke-width="1" marker-end="url(#ar)"/>
+            <text x="74" y="290" text-anchor="middle" font-size="10" fill="#9ca3af" font-style="italic">Carga un archivo para ver los estados activos</text>
           </svg>
         </div>
         <div id="state-info">Haz clic en un estado para ver su descripción.</div>
@@ -675,9 +629,10 @@ function doDrag(e,on){e.preventDefault();document.getElementById('uploadZone').c
 function doDrop(e){e.preventDefault();doDrag(e,false);pickFile(e.dataTransfer.files[0])}
 function pickFile(f){
   if(!f)return; archivo=f;
-  const z=document.getElementById('uploadZone');
-  z.className='upload-zone selected';
-  z.innerHTML=`<div class="upload-icon">✅</div><h3>${f.name}</h3><p>${(f.size/1024).toFixed(1)} KB · listo para compilar</p>`;
+  document.getElementById('uploadZone').className='upload-zone selected';
+  document.getElementById('upload-icon').textContent='✅';
+  document.getElementById('upload-title').textContent=f.name;
+  document.getElementById('upload-sub').textContent=(f.size/1024).toFixed(1)+' KB · listo para compilar';
   document.getElementById('btnC').disabled=false;
   document.getElementById('btnT').textContent='⚙️ Compilar archivo';
 }
@@ -712,6 +667,145 @@ const SD={
 function qs(id){
   const s=SD[id];if(!s)return;
   document.getElementById('state-info').innerHTML=`<strong style="color:#2563eb">${s.l}</strong><br>${s.d}`;
+}
+
+/* ── AFD DINÁMICO ── 
+   Resalta los estados que realmente se usaron al procesar el archivo.
+   q0 siempre activo. q1 si hay IDENTIFIER/KW, q2 si hay NUMBER_INT,
+   q3 si hay NUMBER_FLOAT, q4 si hay operadores, q5 si hubo aceptación. */
+function drawAFD(tabla){
+  // Calcular qué estados se usaron basándose en la tabla de símbolos
+  const usedStates=new Set(['q0','q5']); // q0 y q5 siempre
+  tabla.forEach(r=>{
+    // tipo de registro → siempre pasa por q1 (palabra clave)
+    usedStates.add('q1');
+    // nombre variable → q1
+    if(/[a-zA-Z_]/.test(r.nombre)) usedStates.add('q1');
+    // valor/expresión
+    const expr=String(r.expresion||'');
+    if(/[a-zA-Z_]/.test(expr)) usedStates.add('q1');
+    if(/\d+\.\d+/.test(expr)){ usedStates.add('q2'); usedStates.add('q3'); }
+    else if(/\d/.test(expr)) usedStates.add('q2');
+    if(/[+\-*\/()]/.test(expr)) usedStates.add('q4');
+  });
+
+  // Colores: activo=azul vibrante, inactivo=gris claro
+  function sc(id){ return usedStates.has(id)?'#2563eb':'#9ca3af'; }
+  function sf(id){ return usedStates.has(id)?'#dbeafe':'#f3f4f6'; }
+  function st(id){ return usedStates.has(id)?'#1e40af':'#6b7280'; }
+  function sw(id){ return usedStates.has(id)?2:1; }
+
+  const afdWrap=document.getElementById('afd-dynamic');
+  if(!afdWrap) return;
+
+  afdWrap.innerHTML=`<svg width="100%" viewBox="0 0 420 290" role="img">
+    <defs>
+      <marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+        <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+    </defs>
+
+    <!-- flecha entrada -->
+    <line x1="20" y1="143" x2="48" y2="143" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#ar2)"/>
+    <polygon points="14,139 14,147 6,143" fill="#9ca3af"/>
+
+    <!-- q0 inicio (siempre activo) -->
+    <g style="cursor:pointer" onclick="qs('q0')">
+      <circle cx="74" cy="143" r="24" fill="${sf('q0')}" stroke="${sc('q0')}" stroke-width="${sw('q0')+1}"/>
+      <circle cx="74" cy="143" r="18" fill="none" stroke="${sc('q0')}" stroke-width="1" stroke-dasharray="3 2"/>
+      <text x="74" y="143" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="${st('q0')}">q0</text>
+    </g>
+    <text x="74" y="175" text-anchor="middle" font-size="9" fill="#6b7280">inicio</text>
+
+    <!-- q1 ident/kw -->
+    <g style="cursor:pointer" onclick="qs('q1')">
+      <circle cx="200" cy="65" r="24" fill="${sf('q1')}" stroke="${sc('q1')}" stroke-width="${sw('q1')}"/>
+      <text x="200" y="65" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="${st('q1')}">q1</text>
+    </g>
+    <text x="200" y="97" text-anchor="middle" font-size="9" fill="#6b7280">ident/kw${usedStates.has('q1')?' ✓':''}</text>
+
+    <!-- q2 int -->
+    <g style="cursor:pointer" onclick="qs('q2')">
+      <circle cx="200" cy="150" r="24" fill="${sf('q2')}" stroke="${sc('q2')}" stroke-width="${sw('q2')}"/>
+      <text x="200" y="150" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="${st('q2')}">q2</text>
+    </g>
+    <text x="200" y="182" text-anchor="middle" font-size="9" fill="#6b7280">int${usedStates.has('q2')?' ✓':''}</text>
+
+    <!-- q3 float -->
+    <g style="cursor:pointer" onclick="qs('q3')">
+      <circle cx="200" cy="232" r="24" fill="${sf('q3')}" stroke="${sc('q3')}" stroke-width="${sw('q3')}"/>
+      <text x="200" y="232" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="${st('q3')}">q3</text>
+    </g>
+    <text x="200" y="264" text-anchor="middle" font-size="9" fill="#6b7280">float${usedStates.has('q3')?' ✓':''}</text>
+
+    <!-- q4 op -->
+    <g style="cursor:pointer" onclick="qs('q4')">
+      <circle cx="340" cy="85" r="24" fill="${sf('q4')}" stroke="${sc('q4')}" stroke-width="${sw('q4')}"/>
+      <circle cx="340" cy="85" r="18" fill="none" stroke="${sc('q4')}" stroke-width="1"/>
+      <text x="340" y="85" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="${st('q4')}">q4</text>
+    </g>
+    <text x="340" y="117" text-anchor="middle" font-size="9" fill="#6b7280">op${usedStates.has('q4')?' ✓':''}</text>
+
+    <!-- q5 aceptacion -->
+    <g style="cursor:pointer" onclick="qs('q5')">
+      <circle cx="340" cy="195" r="24" fill="${sf('q5')}" stroke="${sc('q5')}" stroke-width="${sw('q5')}"/>
+      <circle cx="340" cy="195" r="18" fill="none" stroke="${sc('q5')}" stroke-width="1"/>
+      <text x="340" y="195" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="${st('q5')}">q5</text>
+    </g>
+    <text x="340" y="227" text-anchor="middle" font-size="9" fill="#6b7280">token ✓</text>
+
+    <!-- qERR -->
+    <g style="cursor:pointer" onclick="qs('qe')">
+      <circle cx="74" cy="248" r="20" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="74" y="248" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="700" fill="#b91c1c">qERR</text>
+    </g>
+
+    <!-- TRANSICIONES activas en azul, inactivas en gris -->
+    <!-- q0→q1 -->
+    <path d="M94 130 Q144 92 176 72" fill="none" stroke="${usedStates.has('q1')?'#2563eb':'#e5e7eb'}" stroke-width="${usedStates.has('q1')?1.8:1}" marker-end="url(#ar2)" opacity="${usedStates.has('q1')?1:.4}"/>
+    <text x="126" y="88" font-size="9" fill="${usedStates.has('q1')?'#1d4ed8':'#9ca3af'}">letra/_</text>
+
+    <!-- q0→q2 -->
+    <line x1="98" y1="143" x2="176" y2="148" fill="none" stroke="${usedStates.has('q2')?'#7c3aed':'#e5e7eb'}" stroke-width="${usedStates.has('q2')?1.8:1}" marker-end="url(#ar2)" opacity="${usedStates.has('q2')?1:.4}"/>
+    <text x="135" y="138" font-size="9" fill="${usedStates.has('q2')?'#5b21b6':'#9ca3af'}">dígito</text>
+
+    <!-- q0→q4 -->
+    <path d="M92 128 Q200 54 316 78" fill="none" stroke="${usedStates.has('q4')?'#d97706':'#e5e7eb'}" stroke-width="${usedStates.has('q4')?1.8:1}" marker-end="url(#ar2)" opacity="${usedStates.has('q4')?1:.4}"/>
+    <text x="200" y="50" text-anchor="middle" font-size="9" fill="${usedStates.has('q4')?'#92400e':'#9ca3af'}">+−*/( )</text>
+
+    <!-- q0→qERR -->
+    <line x1="74" y1="167" x2="74" y2="228" stroke="#dc2626" stroke-width="1.2" marker-end="url(#ar2)" stroke-dasharray="3 2" opacity=".5"/>
+    <text x="56" y="200" font-size="9" fill="#dc2626">otro</text>
+
+    <!-- q1 loop -->
+    <path d="M188 40 Q196 20 212 32 Q222 44 212 58" fill="none" stroke="${usedStates.has('q1')?'#2563eb':'#e5e7eb'}" stroke-width="1.2" marker-end="url(#ar2)" opacity="${usedStates.has('q1')?1:.3}"/>
+    <text x="222" y="22" font-size="9" fill="${usedStates.has('q1')?'#1d4ed8':'#9ca3af'}">letra/díg/_</text>
+
+    <!-- q2 loop -->
+    <path d="M188 126 Q196 110 210 118 Q220 128 210 140" fill="none" stroke="${usedStates.has('q2')?'#7c3aed':'#e5e7eb'}" stroke-width="1.2" marker-end="url(#ar2)" opacity="${usedStates.has('q2')?1:.3}"/>
+
+    <!-- q2→q3 -->
+    <line x1="200" y1="174" x2="200" y2="208" stroke="${usedStates.has('q3')?'#7c3aed':'#e5e7eb'}" stroke-width="${usedStates.has('q3')?1.8:1}" marker-end="url(#ar2)" opacity="${usedStates.has('q3')?1:.4}"/>
+    <text x="212" y="193" font-size="9" fill="${usedStates.has('q3')?'#5b21b6':'#9ca3af'}">.</text>
+
+    <!-- q3 loop -->
+    <path d="M188 210 Q196 194 210 202 Q220 212 210 226" fill="none" stroke="${usedStates.has('q3')?'#7c3aed':'#e5e7eb'}" stroke-width="1.2" marker-end="url(#ar2)" opacity="${usedStates.has('q3')?1:.3}"/>
+
+    <!-- q1→q5 -->
+    <path d="M224 68 Q284 104 316 180" fill="none" stroke="${usedStates.has('q1')?'#2563eb':'#e5e7eb'}" stroke-width="1.2" marker-end="url(#ar2)" opacity="${usedStates.has('q1')?1:.3}"/>
+    <text x="288" y="116" font-size="9" fill="${usedStates.has('q1')?'#1d4ed8':'#9ca3af'}">otro</text>
+
+    <!-- q2→q5 -->
+    <line x1="224" y1="152" x2="316" y2="188" stroke="${usedStates.has('q2')?'#7c3aed':'#e5e7eb'}" stroke-width="1.2" marker-end="url(#ar2)" opacity="${usedStates.has('q2')?1:.3}"/>
+
+    <!-- q3→q5 -->
+    <path d="M224 228 Q278 228 316 204" fill="none" stroke="${usedStates.has('q3')?'#7c3aed':'#e5e7eb'}" stroke-width="1.2" marker-end="url(#ar2)" opacity="${usedStates.has('q3')?1:.3}"/>
+
+    <!-- leyenda -->
+    <rect x="6" y="4" width="130" height="28" rx="4" fill="#f8faff" stroke="#e8eaf0" stroke-width="0.5"/>
+    <circle cx="18" cy="18" r="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="26" y="22" font-size="9" fill="#374151">estado usado en compilación</text>
+  </svg>`;
 }
 
 /* ── SIMULADOR ── */
@@ -809,6 +903,9 @@ function fillCompilerPanels(data){
         return `<tr class="${cls}"><td>${r.nombre}</td><td>${r.tipo}</td><td>${r.expresion}</td><td><b>${r.valor}</b></td></tr>`;
       }).join('')}
     </table>`;
+  /* AFD dinámico */
+  drawAFD(tabla);
+
   /* JSON out */
   document.getElementById('json-out').textContent=JSON.stringify(data.resumen||{},null,2);
   /* stats */
