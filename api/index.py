@@ -117,7 +117,7 @@ def _compilar_fila(fila_num, tipo_raw, nombre_raw, valor_raw, tabla):
         "tipo": tipo,
         "nombre": nombre,
         "expresion": valor_str,
-        "valor_resuelto": round(valor_resuelto, 6),
+        "valor": round(valor_resuelto, 6),
     }
 
 
@@ -199,7 +199,7 @@ def compilar():
             "compilado_en": datetime.now(timezone.utc).isoformat(),
         },
         "tabla_de_simbolos": tabla_final,
-        "resumen": {e["nombre"]: e["valor_resuelto"] for e in tabla_final},
+        "resumen": {e["nombre"]: e["valor"] for e in tabla_final},
     }
 
     try:
