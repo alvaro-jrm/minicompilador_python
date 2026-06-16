@@ -151,7 +151,7 @@ table.sym-tbl tr.row-cal td:first-child{color:#059669}
 .panel-title{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:700}
 .panel-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:4px;background:#f3f4f6;color:#6b7280;letter-spacing:.4px}
 .cfg-full{background:#f8faff;border:1px solid #e8eaf0;border-radius:8px;padding:14px;font-family:monospace;font-size:12px;line-height:2;overflow-x:auto;white-space:pre}
-#ast-wrap{background:#f8faff;border:1px solid #e8eaf0;border-radius:8px;overflow:auto;height:320px;max-height:320px;padding:8px;margin-top:8px;cursor:grab}
+#ast-wrap{background:#f8faff;border:1px solid #e8eaf0;border-radius:8px;overflow:auto;height:200px;max-height:320px;padding:8px;margin-top:8px;cursor:grab}
 .ast-controls{display:flex;gap:5px}
 .ast-btn{padding:4px 9px;border-radius:6px;border:1px solid #e5e7eb;background:#f9fafb;cursor:pointer;font-size:11px}
 .json-dark{background:#1e1e2e;border-radius:12px;padding:18px;border:1px solid #2a2a3e}
