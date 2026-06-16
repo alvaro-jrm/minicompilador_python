@@ -6,7 +6,7 @@ if _ROOT not in sys.path:
 from datetime import datetime, timezone
 from io import BytesIO
 import pandas as pd
-from flask import Flask, request, jsonify, render_template_string
+from flask import Flask, request, jsonify, Response
 
 try:
     from pymongo import MongoClient
@@ -672,7 +672,7 @@ function fillPanels(data) {
   var ast = '';
   tabla.forEach(function(r){
     if (r.tipo === 'calculo') {
-      ast += 'ASIGNACION\n  \u251C\u2500 ID: ' + r.nombre + '\n  \u2514\u2500 EXPR: ' + r.expresion + '\n       \u2514\u2500 eval = ' + r.valor + '\n\n';
+      var nl = String.fromCharCode(10); ast += 'ASIGNACION' + nl + '  ID: ' + r.nombre + nl + '  EXPR: ' + r.expresion + nl + '  eval = ' + r.valor + nl + nl;
     }
   });
   document.getElementById('ast-preview').innerHTML = ast || '(sin expresiones de cálculo)';
@@ -914,7 +914,7 @@ def _compilar_fila(fila_num, tipo_raw, nombre_raw, valor_raw, tabla):
 
 @app.route("/", methods=["GET"])
 def index():
-    return render_template_string(HTML_PAGE)
+    return Response(HTML_PAGE, mimetype='text/html')
 
 @app.route("/compile", methods=["POST"])
 def compilar():
