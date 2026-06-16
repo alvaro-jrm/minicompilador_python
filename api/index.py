@@ -529,7 +529,7 @@ function drawAFD(tabla) {
   var mk = '<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>';
 
   function circ(cx,cy,r,id,lbl,dbl){
-    var s = '<g style="cursor:pointer" onclick="qs('' + id + '')">';
+    var s = '<g style="cursor:pointer" onclick="qs(\u0027' + id + '\u0027)">';
     s += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+sf(id)+'" stroke="'+sc(id)+'" stroke-width="'+sw(id)+'"/>';
     if (dbl) s += '<circle cx="'+cx+'" cy="'+cy+'" r="'+(r-6)+'" fill="none" stroke="'+sc(id)+'" stroke-width="1"/>';
     s += '<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="'+st(id)+'">'+lbl+'</text></g>';
@@ -551,7 +551,7 @@ function drawAFD(tabla) {
   svg += circ(340,85,24,'q4','q4',true)  + txt(340,117,'op' + (used.q4?' ✓':''));
   svg += circ(340,195,24,'q5','q5',true) + txt(340,227,'token ✓');
   // qERR siempre rojo
-  svg += '<g style="cursor:pointer" onclick="qs('qe')">';
+  svg += '<g style="cursor:pointer" onclick="qs(\u0027qe\u0027)">';
   svg += '<circle cx="74" cy="248" r="20" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>';
   svg += '<text x="74" y="248" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="700" fill="#b91c1c">qERR</text></g>';
   // transiciones
@@ -668,12 +668,7 @@ function fillPanels(data) {
   var ast = '';
   tabla.forEach(function(r){
     if (r.tipo === 'calculo') {
-      ast += 'ASIGNACION
-  ├─ ID: ' + r.nombre + '
-  └─ EXPR: ' + r.expresion + '
-       └─ eval = ' + r.valor + '
-
-';
+      ast += 'ASIGNACION\n  \u251C\u2500 ID: ' + r.nombre + '\n  \u2514\u2500 EXPR: ' + r.expresion + '\n       \u2514\u2500 eval = ' + r.valor + '\n\n';
     }
   });
   document.getElementById('ast-preview').innerHTML = ast || '(sin expresiones de cálculo)';
