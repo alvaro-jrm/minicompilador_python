@@ -1,14 +1,10 @@
 import os
 import sys
 
-# -- Path fix para Vercel serverless --
-# En Vercel, el working directory no es la raíz del proyecto.
-# Agregamos la raíz explícitamente para que `compiler` sea importable.
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
-import json
 from datetime import datetime, timezone
 from io import BytesIO
 
@@ -27,7 +23,7 @@ from compiler.parser import parsear_valor, validar_tipo_registro, validar_nombre
 from compiler.semantic import TablaSimbolos, ErrorSemantico
 
 app = Flask(__name__)
-app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10 MB
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024
 
 MONGODB_URI = os.environ.get("MONGODB_URI", "")
 MONGODB_DB  = os.environ.get("MONGODB_DB", "compilador_usil")
@@ -38,11 +34,9 @@ COLUMNAS_REQUERIDAS = {"Tipo_Registro", "Nombre_Variable", "Valor_Asignacion"}
 
 def _get_mongo_collection():
     if not MONGO_AVAILABLE:
-        raise RuntimeError("pymongo no está instalado.")
+        raise RuntimeError("pymongo no esta instalado.")
     if not MONGODB_URI:
-        raise RuntimeError(
-            "MONGODB_URI no configurada. Agrégala en Vercel → Settings → Environment Variables."
-        )
+        raise RuntimeError("MONGODB_URI no configurada en Vercel Environment Variables.")
     client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=5000)
     return client[MONGODB_DB][MONGODB_COL]
 
@@ -65,23 +59,19 @@ def _leer_archivo(archivo):
     df.columns = [c.strip() for c in df.columns]
     faltantes = COLUMNAS_REQUERIDAS - set(df.columns)
     if faltantes:
-        raise ValueError(
-            f"Columnas faltantes: {sorted(faltantes)}. "
-            f"Encontradas: {list(df.columns)}"
-        )
+        raise ValueError(f"Columnas faltantes: {sorted(faltantes)}. Encontradas: {list(df.columns)}")
     return df
 
 
 def _compilar_fila(fila_num, tipo_raw, nombre_raw, valor_raw, tabla):
-    # LÉXICO
     try:
         tipo = validar_tipo_registro(str(tipo_raw).strip())
-    except ErrorLexico as e:
+    except Exception as e:
         raise ErrorLexico(f"Fila {fila_num} [Tipo_Registro]: {e}")
 
     try:
         nombre = validar_nombre_variable(str(nombre_raw).strip())
-    except (ErrorLexico, ErrorSintactico) as e:
+    except Exception as e:
         raise ErrorLexico(f"Fila {fila_num} [Nombre_Variable]: {e}")
 
     valor_str = str(valor_raw).strip()
@@ -90,12 +80,10 @@ def _compilar_fila(fila_num, tipo_raw, nombre_raw, valor_raw, tabla):
     except ErrorLexico as e:
         raise ErrorLexico(f"Fila {fila_num} [Valor_Asignacion]: {e}")
 
-    # SINTÁCTICO
     if tipo in ("insumo", "costo_empaque"):
         if len(tokens_valor) != 1 or tokens_valor[0].tipo not in ("NUMBER_INT", "NUMBER_FLOAT"):
             raise ErrorSintactico(
-                f"Fila {fila_num}: '{tipo}' requiere un número literal. "
-                f"Se encontró: '{valor_str}'"
+                f"Fila {fila_num}: '{tipo}' requiere un numero literal. Se encontro: '{valor_str}'"
             )
         ast = None
     else:
@@ -104,32 +92,31 @@ def _compilar_fila(fila_num, tipo_raw, nombre_raw, valor_raw, tabla):
         except ErrorSintactico as e:
             raise ErrorSintactico(f"Fila {fila_num} [Valor_Asignacion]: {e}")
 
-    # SEMÁNTICO
     if tipo == "insumo":
-        valor_resuelto = tabla.registrar_insumo(nombre, valor_str, fila_num)
+        valor_num = tabla.registrar_insumo(nombre, valor_str, fila_num)
     elif tipo == "costo_empaque":
-        valor_resuelto = tabla.registrar_costo_empaque(nombre, valor_str, fila_num)
+        valor_num = tabla.registrar_costo_empaque(nombre, valor_str, fila_num)
     else:
-        valor_resuelto = tabla.registrar_calculo(nombre, valor_str, ast, fila_num)
+        valor_num = tabla.registrar_calculo(nombre, valor_str, ast, fila_num)
 
     return {
-        "fila": fila_num,
-        "tipo": tipo,
-        "nombre": nombre,
+        "fila":      fila_num,
+        "tipo":      tipo,
+        "nombre":    nombre,
         "expresion": valor_str,
-        "valor": round(valor_resuelto, 6),
+        "valor":     round(valor_num, 6),
     }
 
 
 @app.route("/", methods=["GET"])
 def health_check():
     return jsonify({
-        "status": "ok",
+        "status":   "ok",
         "servicio": "Minicompilador USIL 2026",
-        "version": "1.0.0",
+        "version":  "1.0.0",
         "rutas": {
-            "POST /compile": "Compila un archivo Excel/CSV",
-            "GET /historial": "Ultimas 20 compilaciones exitosas",
+            "POST /compile":   "Compila un archivo Excel/CSV",
+            "GET  /historial": "Ultimas 20 compilaciones exitosas",
         },
     })
 
@@ -138,9 +125,9 @@ def health_check():
 def compilar():
     if "archivo" not in request.files:
         return jsonify({
-            "status": "error",
-            "fase": "entrada",
-            "mensaje": "No se encontró el campo 'archivo'. Envía el archivo con key='archivo' en form-data.",
+            "status":  "error",
+            "fase":    "entrada",
+            "mensaje": "No se encontro el campo 'archivo'. Envia el archivo con key='archivo' en form-data.",
         }), 400
 
     archivo = request.files["archivo"]
@@ -153,16 +140,16 @@ def compilar():
         return jsonify({"status": "error", "fase": "lectura_archivo", "mensaje": str(e)}), 400
 
     if df.empty:
-        return jsonify({"status": "error", "fase": "lectura_archivo", "mensaje": "El archivo está vacío."}), 400
+        return jsonify({"status": "error", "fase": "lectura_archivo", "mensaje": "El archivo esta vacio."}), 400
 
     tabla = TablaSimbolos()
     filas_procesadas = []
     total_filas = len(df)
 
     for idx, row in df.iterrows():
-        fila_num = idx + 2
-        tipo_raw   = row.get("Tipo_Registro", "")
-        nombre_raw = row.get("Nombre_Variable", "")
+        fila_num   = idx + 2
+        tipo_raw   = row.get("Tipo_Registro",    "")
+        nombre_raw = row.get("Nombre_Variable",  "")
         valor_raw  = row.get("Valor_Asignacion", "")
 
         if pd.isna(tipo_raw) or str(tipo_raw).strip() == "":
@@ -190,52 +177,60 @@ def compilar():
                 "filas_procesadas": len(filas_procesadas),
             }), 400
 
+    # --- Tabla de simbolos final ---
     tabla_final = tabla.como_lista()
+    resumen     = {e["nombre"]: e["valor"] for e in tabla_final}
+
     documento = {
         "metadata": {
             "archivo_origen": archivo.filename,
-            "total_filas": total_filas,
-            "filas_validas": len(filas_procesadas),
-            "compilado_en": datetime.now(timezone.utc).isoformat(),
+            "total_filas":    total_filas,
+            "filas_validas":  len(filas_procesadas),
+            "compilado_en":   datetime.now(timezone.utc).isoformat(),
         },
         "tabla_de_simbolos": tabla_final,
-        "resumen": {e["nombre"]: e["valor"] for e in tabla_final},
+        "resumen":           resumen,
     }
 
+    # --- Persistencia MongoDB ---
     try:
         col = _get_mongo_collection()
         result = col.insert_one(documento)
         id_insertado = str(result.inserted_id)
     except RuntimeError as e:
         return jsonify({
-            "status": "ok_sin_persistencia",
-            "advertencia": str(e),
+            "status":            "ok_sin_persistencia",
+            "advertencia":       str(e),
             "tabla_de_simbolos": tabla_final,
-            "resumen": documento["resumen"],
-            "metadata": documento["metadata"],
+            "resumen":           resumen,
+            "metadata":          documento["metadata"],
         }), 200
     except Exception as e:
         return jsonify({
-            "status": "error", "fase": "base_de_datos",
+            "status":  "error",
+            "fase":    "base_de_datos",
             "mensaje": f"Error MongoDB: {str(e)}",
         }), 500
 
     return jsonify({
-        "status": "ok",
-        "mensaje": f"{len(filas_procesadas)} instruccion(es) compiladas exitosamente.",
-        "id_documento": id_insertado,
+        "status":            "ok",
+        "mensaje":           f"{len(filas_procesadas)} instruccion(es) compiladas exitosamente.",
+        "id_documento":      id_insertado,
         "tabla_de_simbolos": tabla_final,
-        "resumen": documento["resumen"],
-        "metadata": documento["metadata"],
+        "resumen":           resumen,
+        "metadata":          documento["metadata"],
     }), 200
 
 
 @app.route("/historial", methods=["GET"])
 def historial():
     try:
-        col = _get_mongo_collection()
-        docs = list(col.find({}, {"_id": 1, "metadata": 1, "resumen": 1})
-                    .sort("metadata.compilado_en", -1).limit(20))
+        col  = _get_mongo_collection()
+        docs = list(
+            col.find({}, {"_id": 1, "metadata": 1, "resumen": 1})
+               .sort("metadata.compilado_en", -1)
+               .limit(20)
+        )
         for d in docs:
             d["_id"] = str(d["_id"])
         return jsonify({"status": "ok", "total": len(docs), "compilaciones": docs}), 200
@@ -259,7 +254,7 @@ def too_large(e):
 
 @app.errorhandler(500)
 def server_error(e):
-    return jsonify({"status": "error", "mensaje": "Error interno del servidor.", "detalle": str(e)}), 500
+    return jsonify({"status": "error", "mensaje": "Error interno.", "detalle": str(e)}), 500
 
 
 if __name__ == "__main__":
