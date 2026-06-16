@@ -26,7 +26,8 @@ MONGODB_DB  = os.environ.get("MONGODB_DB", "compilador_usil")
 MONGODB_COL = os.environ.get("MONGODB_COL", "compilaciones")
 COLUMNAS_REQUERIDAS = {"Tipo_Registro", "Nombre_Variable", "Valor_Asignacion"}
 
-HTML_PAGE = r"""<!DOCTYPE html>
+HTML_PAGE = """
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -35,280 +36,193 @@ HTML_PAGE = r"""<!DOCTYPE html>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f6fa;color:#1a1a2e;font-size:14px;line-height:1.6}
-
-/* ── NAV ── */
-nav{background:#fff;border-bottom:1px solid #e8eaf0;padding:0 32px;display:flex;align-items:center;height:56px;position:sticky;top:0;z-index:100}
-.nav-brand{font-weight:700;font-size:15px;color:#1a1a2e;margin-right:12px}
+nav{background:#fff;border-bottom:1px solid #e8eaf0;padding:0 32px;display:flex;align-items:center;height:56px;position:sticky;top:0;z-index:100;gap:12px}
+.nav-brand{font-weight:700;font-size:15px;color:#1a1a2e}
 .nav-badge{background:#eef2ff;color:#3730a3;font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;margin-right:auto}
-.nav-links{display:flex;gap:4px}
-.nav-link{padding:6px 16px;border-radius:6px;font-size:13px;font-weight:500;color:#6b7280;cursor:pointer;border:none;background:none;text-decoration:none}
-.nav-link.active{color:#2563eb;border-bottom:2px solid #2563eb;border-radius:0}
+.nav-links{display:flex;gap:2px}
+.nav-link{padding:6px 16px;font-size:13px;font-weight:500;color:#6b7280;cursor:pointer;border:none;background:none;text-decoration:none;border-bottom:2px solid transparent}
+.nav-link.active{color:#2563eb;border-bottom-color:#2563eb}
 .nav-link:hover{color:#1a1a2e}
-.nav-icon{width:32px;height:32px;border-radius:8px;background:#f3f4f6;border:1px solid #e5e7eb;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;margin-left:8px}
-
-/* ── PAGES ── */
-.page{display:none;padding:28px 32px;max-width:1100px;margin:0 auto}
+.page{display:none;padding:24px 28px;max-width:1100px;margin:0 auto}
 .page.active{display:block}
-
-/* ── CARDS ── */
-.card{background:#fff;border:1px solid #e8eaf0;border-radius:12px;padding:24px;margin-bottom:20px}
-.card-sm{background:#fff;border:1px solid #e8eaf0;border-radius:10px;padding:16px}
-
-/* ── SECTION HEADER ── */
-.sec-head{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+.card{background:#fff;border:1px solid #e8eaf0;border-radius:12px;padding:22px;margin-bottom:18px}
+.sec-head{display:flex;align-items:center;gap:10px;margin-bottom:16px}
 .sec-num{width:28px;height:28px;background:#2563eb;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
-.sec-title{font-size:17px;font-weight:700;color:#1a1a2e}
-
-/* ── DESCRIPTION ── */
-.desc-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
-.desc-block{border-left:3px solid #2563eb;padding:12px 14px;background:#f8faff;border-radius:0 8px 8px 0}
+.sec-title{font-size:16px;font-weight:700}
+.desc-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.desc-block{border-left:3px solid #2563eb;padding:11px 13px;background:#f8faff;border-radius:0 8px 8px 0}
 .desc-block.green{border-color:#059669}
-.desc-label{font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.desc-label{font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
 .desc-text{font-size:12px;color:#374151}
-.pipeline{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px}
-.pipe-step{display:flex;align-items:center;gap:5px;background:#eef2ff;color:#3730a3;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600}
+.pipeline{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pipe-step{background:#eef2ff;color:#3730a3;padding:5px 12px;border-radius:6px;font-size:12px;font-weight:600}
 .pipe-step.green{background:#ecfdf5;color:#065f46}
-.pipe-arrow{color:#9ca3af;font-size:14px}
-
-/* ── UPLOAD ── */
-.upload-zone{border:2px dashed #c7d2fe;border-radius:12px;padding:40px 20px;text-align:center;cursor:pointer;background:#fafbff;transition:all .2s}
-.upload-zone:hover,.upload-zone.drag{background:#eef2ff;border-color:#6366f1}
+.pipe-arrow{color:#9ca3af}
+/* upload */
+.upload-zone{border:2px dashed #c7d2fe;border-radius:12px;padding:36px 20px;text-align:center;cursor:pointer;background:#fafbff;transition:all .2s;user-select:none}
+.upload-zone:hover{background:#eef2ff;border-color:#6366f1}
+.upload-zone.drag{background:#eef2ff;border-color:#6366f1}
 .upload-zone.selected{background:#ecfdf5;border-color:#059669}
-.upload-icon{font-size:36px;margin-bottom:8px}
-.upload-zone h3{font-size:14px;font-weight:600;color:#4338ca;margin-bottom:4px}
-.upload-zone.selected h3{color:#065f46}
-.upload-zone p{font-size:12px;color:#9ca3af}
-#fileInput{display:none}
-
-/* progress bar */
-.prog-wrap{margin-top:14px;display:none}
-.prog-bar{height:4px;background:#e5e7eb;border-radius:2px;overflow:hidden;margin-bottom:8px}
-.prog-fill{height:100%;background:#2563eb;border-radius:2px;transition:width .5s ease}
+.u-icon{font-size:34px;margin-bottom:6px}
+.u-title{font-size:14px;font-weight:600;color:#4338ca;margin-bottom:3px}
+.upload-zone.selected .u-title{color:#065f46}
+.u-sub{font-size:12px;color:#9ca3af}
+.prog-wrap{margin-top:12px;display:none}
+.prog-bar{height:4px;background:#e5e7eb;border-radius:2px;overflow:hidden;margin-bottom:7px}
+.prog-fill{height:100%;background:#2563eb;border-radius:2px;transition:width .5s}
 .prog-steps{display:flex;gap:6px}
 .ps{padding:3px 12px;border-radius:20px;border:1px solid #e5e7eb;font-size:11px;font-weight:600;color:#9ca3af}
 .ps.active{background:#eef2ff;border-color:#6366f1;color:#3730a3}
 .ps.done{background:#ecfdf5;border-color:#6ee7b7;color:#065f46}
 .ps.error{background:#fef2f2;border-color:#fca5a5;color:#b91c1c}
-
-.btn-compile{width:100%;margin-top:14px;padding:12px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-compile{width:100%;margin-top:12px;padding:11px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
 .btn-compile:hover{background:#1d4ed8}
 .btn-compile:disabled{background:#9ca3af;cursor:not-allowed}
 .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;display:none}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── ANALYSIS GRID ── */
-.analysis-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:16px}
+/* analysis grid */
+.analysis-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:14px}
 @media(max-width:860px){.analysis-grid{grid-template-columns:1fr}}
-.a-card{border:1px solid #e8eaf0;border-radius:10px;padding:16px;background:#fff;min-width:0;overflow:hidden}
-.a-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #f3f4f6}
-.a-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#374151}
-.a-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px}
+.a-card{border:1px solid #e8eaf0;border-radius:10px;padding:14px;background:#fff;min-width:0;overflow:hidden}
+.a-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #f3f4f6}
+.a-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#374151}
+.a-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px}
 .badge-live{background:#dcfce7;color:#15803d}
 .badge-cfg{background:#dbeafe;color:#1e40af}
 .badge-out{background:#fef3c7;color:#92400e}
-
-/* tokens */
-.tok{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:700;font-family:monospace;margin:2px}
+.lbl{font-size:11px;color:#6b7280;margin-bottom:4px}
+.tok{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;font-family:monospace;margin:2px}
 .tok-kw{background:#ede9fe;color:#5b21b6}
 .tok-id{background:#dbeafe;color:#1e40af}
 .tok-num{background:#dcfce7;color:#166534}
 .tok-op{background:#fef3c7;color:#92400e}
 .tok-par{background:#fce7f3;color:#9d174d}
-#tokens-live{min-height:28px;display:flex;flex-wrap:wrap;gap:2px}
-.live-placeholder{font-size:11px;color:#9ca3af;font-style:italic}
-
-/* tabla análisis */
 table.atbl{width:100%;border-collapse:collapse;font-size:11px}
-table.atbl th{background:#f8faff;padding:5px 7px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e8eaf0}
-table.atbl td{padding:4px 7px;border-bottom:1px solid #f3f4f6;font-family:monospace}
-
-/* AFD */
-.afd-wrap{overflow-x:auto;margin:8px 0}
-.state-c{cursor:pointer;transition:opacity .15s}
-.state-c:hover{opacity:.8}
-#state-info{background:#f8faff;border-radius:6px;padding:8px 10px;font-size:11px;color:#4b5563;margin-top:6px;border:1px solid #e8eaf0;min-height:36px}
-
-/* sim */
-.sim-wrap{margin-top:10px;border-top:1px solid #f3f4f6;padding-top:10px}
-.sim-label{font-size:11px;font-weight:600;color:#374151;margin-bottom:5px}
-#sim-input{width:100%;padding:7px 10px;border-radius:6px;border:1px solid #d1d5db;font-family:monospace;font-size:12px;color:#111;background:#fff}
-.sim-btns{display:flex;gap:6px;margin-top:5px}
-.sim-btns button{padding:5px 14px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;cursor:pointer;font-size:12px;color:#374151}
+table.atbl th{background:#f8faff;padding:5px 6px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e8eaf0}
+table.atbl td{padding:4px 6px;border-bottom:1px solid #f3f4f6;font-family:monospace;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+.afd-wrap{overflow:hidden;margin:6px 0}
+#state-info{background:#f8faff;border-radius:6px;padding:7px 9px;font-size:11px;color:#4b5563;margin-top:6px;border:1px solid #e8eaf0;min-height:34px}
+.sim-wrap{margin-top:8px;border-top:1px solid #f3f4f6;padding-top:8px}
+.sim-lbl{font-size:11px;font-weight:600;color:#374151;margin-bottom:4px}
+.sim-input{width:100%;padding:6px 9px;border-radius:6px;border:1px solid #d1d5db;font-family:monospace;font-size:12px;color:#111;background:#fff}
+.sim-btns{display:flex;gap:5px;margin-top:4px}
+.sim-btns button{padding:5px 12px;border-radius:6px;border:1px solid #d1d5db;background:#f9fafb;cursor:pointer;font-size:12px;color:#374151}
 .sim-btns button:first-child{background:#2563eb;color:#fff;border-color:#2563eb}
-#sim-chars{margin-top:6px;min-height:24px;display:flex;flex-wrap:wrap;gap:2px}
-#sim-chars span{display:inline-block;padding:2px 6px;border-radius:4px;font-family:monospace;font-size:12px;border:1px solid #e5e7eb}
+#sim-chars{margin-top:5px;min-height:22px;display:flex;flex-wrap:wrap;gap:2px}
+#sim-chars span{display:inline-block;padding:2px 5px;border-radius:4px;font-family:monospace;font-size:11px;border:1px solid #e5e7eb}
 #sim-chars span.cur{background:#ede9fe;border-color:#7c3aed;color:#4f46e5;font-weight:700}
 #sim-chars span.done{background:#f3f4f6;color:#9ca3af}
-#sim-result{font-size:11px;margin-top:5px;min-height:16px}
-
-/* tabla transiciones */
+#sim-result{font-size:11px;margin-top:4px;min-height:16px}
 .trans-wrap{overflow-x:auto;margin-top:6px}
 table.trans{border-collapse:collapse;font-size:10px;width:100%}
-table.trans th{padding:5px 6px;border:1px solid #e8eaf0;text-align:center;font-weight:600;background:#f8faff}
-table.trans td{padding:5px 6px;border:1px solid #e8eaf0;text-align:center;font-family:monospace}
-code.st{padding:1px 5px;border-radius:3px;font-size:10px}
-
-/* CFG */
-.cfg-box{background:#f8faff;border-radius:8px;padding:14px;font-family:monospace;font-size:11px;line-height:2;color:#1e3a5f;overflow-x:auto;white-space:pre;border:1px solid #e8eaf0}
+table.trans th{padding:4px 5px;border:1px solid #e8eaf0;text-align:center;font-weight:600;background:#f8faff;white-space:nowrap}
+table.trans td{padding:4px 5px;border:1px solid #e8eaf0;text-align:center;font-family:monospace}
+code.st{padding:1px 4px;border-radius:3px;font-size:10px}
+.cfg-box{background:#f8faff;border-radius:7px;padding:11px;font-family:monospace;font-size:11px;line-height:1.9;overflow-x:auto;white-space:pre;border:1px solid #e8eaf0}
 .cfg-kw{color:#2563eb;font-weight:700}
-.cfg-arrow{color:#6366f1}
-.cfg-sym{color:#0f766e}
-
-/* instrucciones */
-.inst-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #f3f4f6;font-size:11px}
-.inst-fila{color:#9ca3af;font-family:monospace;width:28px}
-.inst-tipo{font-weight:600;color:#2563eb;width:88px}
-.inst-nom{color:#374151;flex:1;font-family:monospace}
+.inst-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid #f3f4f6;font-size:11px;gap:4px}
+.inst-fila{color:#9ca3af;font-family:monospace;min-width:26px}
+.inst-tipo{font-weight:600;color:#2563eb;min-width:80px}
+.inst-nom{color:#374151;flex:1;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .inst-val{color:#059669;font-weight:600;font-family:monospace}
-
-/* semántico */
-table.sym-tbl td:first-child{font-weight:600}
-.row-ins td:first-child{color:#4f46e5}
-.row-cos td:first-child{color:#b45309}
-.row-cal td:first-child{color:#059669}
-.json-out{background:#1e1e2e;border-radius:8px;padding:12px;font-family:monospace;font-size:11px;color:#cdd6f4;white-space:pre-wrap;min-height:50px;overflow-x:auto;border:1px solid #2a2a3e}
-.json-key{color:#89b4fa}
-.json-str{color:#a6e3a1}
-.json-num{color:#fab387}
-
-/* stats */
-.stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
-.stat-box{background:#f8faff;border-radius:8px;padding:10px;text-align:center;border:1px solid #e8eaf0}
-.stat-label{font-size:10px;color:#9ca3af;font-weight:600;text-transform:uppercase}
-.stat-val{font-size:22px;font-weight:700}
-.stat-val.ins{color:#4f46e5}
-.stat-val.cos{color:#b45309}
-.stat-val.cal{color:#059669}
-
-/* sync btn */
-.btn-sync{width:100%;margin-top:10px;padding:9px;background:#f8faff;border:1px solid #e8eaf0;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;color:#374151;display:flex;align-items:center;justify-content:center;gap:6px}
+table.sym-tbl td:first-child{font-weight:600;color:#4f46e5}
+table.sym-tbl tr.row-cos td:first-child{color:#b45309}
+table.sym-tbl tr.row-cal td:first-child{color:#059669}
+.json-out{background:#1e1e2e;border-radius:7px;padding:10px;font-family:monospace;font-size:11px;color:#cdd6f4;white-space:pre-wrap;min-height:48px;overflow-x:auto;border:1px solid #2a2a3e}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:7px}
+.stat-box{background:#f8faff;border-radius:7px;padding:9px;text-align:center;border:1px solid #e8eaf0}
+.stat-lbl{font-size:10px;color:#9ca3af;font-weight:600;text-transform:uppercase}
+.stat-val{font-size:20px;font-weight:700}
+.btn-sync{width:100%;margin-top:9px;padding:8px;background:#f8faff;border:1px solid #e8eaf0;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;color:#374151;display:flex;align-items:center;justify-content:center;gap:6px}
 .btn-sync:hover{background:#eef2ff;border-color:#6366f1;color:#3730a3}
-.sync-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;display:inline-block}
-
-/* ── RESULTS PAGE ── */
-.results-header{border-left:4px solid #2563eb;padding:8px 0 8px 16px;margin-bottom:24px}
-.results-header h2{font-size:22px;font-weight:700;color:#1a1a2e}
-.results-header p{font-size:13px;color:#6b7280;margin-top:3px}
-.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-@media(max-width:700px){.results-grid{grid-template-columns:1fr}}
-
-/* CFG panel results */
-.cfg-panel{background:#fff;border:1px solid #e8eaf0;border-radius:12px;padding:20px}
-.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.panel-title{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;color:#1a1a2e}
-.panel-badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:4px;background:#f3f4f6;color:#6b7280;letter-spacing:.5px}
-.cfg-full{background:#f8faff;border:1px solid #e8eaf0;border-radius:8px;padding:16px;font-family:monospace;font-size:12px;line-height:2.1;color:#1e3a5f;overflow-x:auto;white-space:pre}
-
-/* AST visual */
-.ast-panel{background:#fff;border:1px solid #e8eaf0;border-radius:12px;padding:20px;margin-top:0}
-.ast-controls{display:flex;gap:6px}
-.ast-btn{padding:5px 10px;border-radius:6px;border:1px solid #e5e7eb;background:#f9fafb;cursor:pointer;font-size:12px}
-#ast-canvas-wrap{background:#f8faff;border:1px solid #e8eaf0;border-radius:8px;overflow:auto;min-height:200px;position:relative;margin-top:10px}
-#ast-canvas{display:block;margin:0 auto}
-
-/* JSON panel results */
-.json-panel{background:#1e1e2e;border-radius:12px;padding:20px;border:1px solid #2a2a3e}
-.json-panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.json-panel-title{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:#cdd6f4}
-.btn-export{background:#2563eb;color:#fff;border:none;border-radius:6px;padding:5px 14px;font-size:12px;font-weight:600;cursor:pointer}
-.json-out-full{font-family:monospace;font-size:12px;color:#cdd6f4;white-space:pre-wrap;overflow-x:auto;line-height:1.7;max-height:300px;overflow-y:auto}
-
-/* metrics */
-.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
-.metric-card{background:#fff;border:1px solid #e8eaf0;border-radius:10px;padding:16px}
-.metric-label{font-size:12px;color:#6b7280;margin-bottom:6px}
-.metric-val{font-size:28px;font-weight:700;color:#2563eb}
-.metric-bar{height:3px;background:#2563eb;border-radius:2px;margin-top:8px}
-
-/* dist */
-.dist-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.dist-label{font-size:12px;color:#374151;width:70px}
-.dist-bar-wrap{flex:1;height:8px;background:#f3f4f6;border-radius:4px;overflow:hidden}
-.dist-bar{height:100%;border-radius:4px;transition:width .8s ease}
-.dist-pct{font-size:12px;font-weight:600;color:#374151;width:35px;text-align:right}
-
-/* validation */
-.val-row{display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid #e8eaf0;border-radius:8px;margin-top:12px}
+.sdot{width:8px;height:8px;border-radius:50%;background:#9ca3af;display:inline-block}
+/* results page */
+.res-header{border-left:4px solid #2563eb;padding:7px 0 7px 14px;margin-bottom:22px}
+.res-header h2{font-size:20px;font-weight:700}
+.res-header p{font-size:13px;color:#6b7280;margin-top:2px}
+.res-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:700px){.res-grid{grid-template-columns:1fr}}
+.panel{background:#fff;border:1px solid #e8eaf0;border-radius:12px;padding:18px}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.panel-title{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:700}
+.panel-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:4px;background:#f3f4f6;color:#6b7280;letter-spacing:.4px}
+.cfg-full{background:#f8faff;border:1px solid #e8eaf0;border-radius:8px;padding:14px;font-family:monospace;font-size:12px;line-height:2;overflow-x:auto;white-space:pre}
+#ast-wrap{background:#f8faff;border:1px solid #e8eaf0;border-radius:8px;overflow:auto;min-height:180px;padding:8px;margin-top:8px}
+.ast-controls{display:flex;gap:5px}
+.ast-btn{padding:4px 9px;border-radius:6px;border:1px solid #e5e7eb;background:#f9fafb;cursor:pointer;font-size:11px}
+.json-dark{background:#1e1e2e;border-radius:12px;padding:18px;border:1px solid #2a2a3e}
+.json-dark-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.json-dark-title{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:#cdd6f4}
+.btn-export{background:#2563eb;color:#fff;border:none;border-radius:6px;padding:5px 13px;font-size:12px;font-weight:600;cursor:pointer}
+.json-scroll{font-family:monospace;font-size:11px;color:#cdd6f4;white-space:pre-wrap;overflow-x:auto;line-height:1.7;max-height:260px;overflow-y:auto}
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.metric-card{background:#fff;border:1px solid #e8eaf0;border-radius:10px;padding:14px}
+.metric-lbl{font-size:12px;color:#6b7280;margin-bottom:4px}
+.metric-val{font-size:26px;font-weight:700;color:#2563eb}
+.metric-bar{height:3px;background:#2563eb;border-radius:2px;margin-top:7px}
+.dist-row{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.dist-lbl{font-size:12px;color:#374151;width:65px}
+.dist-bw{flex:1;height:8px;background:#f3f4f6;border-radius:4px;overflow:hidden}
+.dist-bf{height:100%;border-radius:4px}
+.dist-pct{font-size:12px;font-weight:600;color:#374151;width:32px;text-align:right}
+.val-row{display:flex;align-items:center;justify-content:space-between;padding:11px;border:1px solid #e8eaf0;border-radius:8px;margin-top:10px}
 .val-ok{display:flex;align-items:center;gap:8px}
 .val-dot{width:10px;height:10px;border-radius:50%;background:#22c55e}
-.val-text h4{font-size:13px;font-weight:700;color:#15803d}
-.val-text p{font-size:11px;color:#6b7280}
-.val-icon{font-size:18px;cursor:pointer;color:#9ca3af}
-
-/* error panel */
-.err-panel{background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:16px}
-.err-panel h3{color:#b91c1c;font-size:14px;margin-bottom:6px}
-.err-fase{display:inline-block;background:#fee2e2;color:#b91c1c;border-radius:4px;padding:2px 8px;font-size:10px;font-weight:700;text-transform:uppercase;margin-right:6px}
-
-/* result cards */
-.res-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:14px}
-.res-card{background:#fff;border:1px solid #e8eaf0;border-radius:8px;padding:12px 14px}
-.res-label{font-size:10px;color:#9ca3af;font-weight:600;text-transform:uppercase}
-.res-val{font-size:18px;font-weight:700;color:#2563eb;margin-top:2px}
-
-footer{background:#fff;border-top:1px solid #e8eaf0;padding:20px 32px;display:flex;align-items:center;justify-content:space-between;margin-top:32px}
-.footer-brand{font-weight:700;color:#2563eb;font-size:13px}
-.footer-sub{font-size:11px;color:#9ca3af;margin-top:2px}
-.footer-links{display:flex;gap:20px}
-.footer-links a{font-size:12px;color:#6b7280;text-decoration:none}
-.footer-links a:hover{color:#2563eb}
+.val-h{font-size:13px;font-weight:700;color:#15803d}
+.val-p{font-size:11px;color:#6b7280}
+.res-cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px;margin-top:12px}
+.rc{background:#fff;border:1px solid #e8eaf0;border-radius:8px;padding:11px 13px}
+.rc-lbl{font-size:10px;color:#9ca3af;font-weight:600;text-transform:uppercase}
+.rc-val{font-size:17px;font-weight:700;color:#2563eb;margin-top:2px}
+.err-panel{background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px}
+.err-panel h3{color:#b91c1c;font-size:14px;margin-bottom:5px}
+.efase{display:inline-block;background:#fee2e2;color:#b91c1c;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;text-transform:uppercase;margin-right:5px}
+footer{background:#fff;border-top:1px solid #e8eaf0;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;margin-top:28px}
+.ft-brand{font-weight:700;color:#2563eb;font-size:13px}
+.ft-sub{font-size:11px;color:#9ca3af;margin-top:1px}
+.ft-links{display:flex;gap:18px}
+.ft-links button{font-size:12px;color:#6b7280;border:none;background:none;cursor:pointer}
+.ft-links button:hover{color:#2563eb}
+.ph{font-size:11px;color:#9ca3af;font-style:italic}
 </style>
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
   <span class="nav-brand">Minicompilador de Inventario</span>
   <span class="nav-badge">USIL 2026</span>
   <div class="nav-links">
-    <a class="nav-link active" id="nav-compiler" onclick="showPage('compiler')">Compiler</a>
-    <a class="nav-link" id="nav-results" onclick="showPage('results')">Resultados</a>
-    <a class="nav-link" id="nav-docs" onclick="showPage('docs')">Documentación</a>
+    <button class="nav-link active" id="nav-compiler" onclick="showPage('compiler')">Compiler</button>
+    <button class="nav-link" id="nav-results" onclick="showPage('results')">Resultados</button>
+    <button class="nav-link" id="nav-docs" onclick="showPage('docs')">Documentación</button>
   </div>
-  <div class="nav-icon" title="Configuración">⚙</div>
+  <span style="font-size:18px;cursor:pointer">⚙</span>
 </nav>
 
-<!-- ══════════ PAGE: COMPILER ══════════ -->
+<!-- COMPILER -->
 <div class="page active" id="page-compiler">
-
-  <!-- 1. Descripción -->
   <div class="card">
-    <div class="sec-head">
-      <div class="sec-num">1</div>
-      <h2 class="sec-title">Descripción del compilador</h2>
-    </div>
+    <div class="sec-head"><div class="sec-num">1</div><h2 class="sec-title">Descripción del compilador</h2></div>
     <div class="desc-grid">
-      <div class="desc-block">
-        <div class="desc-label">Proceso de entrada</div>
-        <div class="desc-text">El personal sube un Excel/CSV con columnas <code>Tipo_Registro</code>, <code>Nombre_Variable</code>, <code>Valor_Asignacion</code>. Cada fila es una instrucción de asignación.</div>
-      </div>
-      <div class="desc-block green">
-        <div class="desc-label">Resultado generado</div>
-        <div class="desc-text">Si el archivo es 100% válido → JSON con Tabla de Símbolos resuelta → MongoDB Atlas. Si hay error → fila y fase exacta del análisis.</div>
-      </div>
+      <div class="desc-block"><div class="desc-label">Proceso de entrada</div><div class="desc-text">El personal sube un Excel/CSV con columnas <code>Tipo_Registro</code>, <code>Nombre_Variable</code>, <code>Valor_Asignacion</code>. Cada fila es una instrucción de asignación.</div></div>
+      <div class="desc-block green"><div class="desc-label">Resultado generado</div><div class="desc-text">Si el archivo es 100% válido → JSON con Tabla de Símbolos resuelta → MongoDB Atlas. Si hay error → fila y fase exacta del análisis.</div></div>
     </div>
     <div class="pipeline">
-      <div class="pipe-step">📄 Excel / CSV</div><span class="pipe-arrow">→</span>
-      <div class="pipe-step">🔤 Léxico</div><span class="pipe-arrow">→</span>
-      <div class="pipe-step">📐 Sintáctico</div><span class="pipe-arrow">→</span>
-      <div class="pipe-step">🧠 Semántico</div><span class="pipe-arrow">→</span>
-      <div class="pipe-step green">🍃 MongoDB Atlas</div>
+      <span class="pipe-step">📄 Excel/CSV</span><span class="pipe-arrow">→</span>
+      <span class="pipe-step">🔤 Léxico</span><span class="pipe-arrow">→</span>
+      <span class="pipe-step">📐 Sintáctico</span><span class="pipe-arrow">→</span>
+      <span class="pipe-step">🧠 Semántico</span><span class="pipe-arrow">→</span>
+      <span class="pipe-step green">🍃 MongoDB Atlas</span>
     </div>
   </div>
 
-  <!-- 2. Upload -->
   <div class="card">
-    <div class="sec-head">
-      <div class="sec-num">2</div>
-      <h2 class="sec-title">Ingreso de datos — cargar archivo</h2>
-    </div>
-    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none" onchange="pickFile(this.files[0])">
-    <div class="upload-zone" id="uploadZone"
-         ondragover="doDrag(event,true)" ondragleave="doDrag(event,false)" ondrop="doDrop(event)"
-         onclick="document.getElementById('fileInput').click()">
-      <div id="upload-icon" class="upload-icon">☁️</div>
-      <h3 id="upload-title">Haz clic o arrastra tu archivo aquí</h3>
-      <p id="upload-sub">Formatos: .xlsx · .xls · .csv — máximo 10 MB</p>
+    <div class="sec-head"><div class="sec-num">2</div><h2 class="sec-title">Ingreso de datos — cargar archivo</h2></div>
+    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" style="display:none">
+    <div class="upload-zone" id="uploadZone">
+      <div class="u-icon" id="u-icon">☁️</div>
+      <div class="u-title" id="u-title">Haz clic o arrastra tu archivo aquí</div>
+      <div class="u-sub" id="u-sub">Formatos: .xlsx · .xls · .csv — máximo 10 MB</div>
     </div>
     <div class="prog-wrap" id="progWrap">
       <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
@@ -325,58 +239,25 @@ footer{background:#fff;border-top:1px solid #e8eaf0;padding:20px 32px;display:fl
     </button>
   </div>
 
-  <!-- 3. Proceso interno -->
   <div class="card">
-    <div class="sec-head">
-      <div class="sec-num">3</div>
-      <h2 class="sec-title">Proceso interno del compilador</h2>
-    </div>
+    <div class="sec-head"><div class="sec-num">3</div><h2 class="sec-title">Proceso interno del compilador</h2></div>
     <div class="analysis-grid">
 
       <!-- 3.1 LÉXICO -->
       <div class="a-card">
-        <div class="a-head">
-          <span class="a-title">3.1 Análisis Léxico</span>
-          <span class="a-badge badge-live">LIVE</span>
-        </div>
-        <p style="font-size:11px;color:#6b7280;margin-bottom:5px">Tokens detectados</p>
-        <div id="tokens-live"><span class="live-placeholder">Carga un archivo…</span></div>
+        <div class="a-head"><span class="a-title">3.1 Análisis Léxico</span><span class="a-badge badge-live">LIVE</span></div>
+        <p class="lbl">Tokens detectados</p>
+        <div id="tokens-live"><span class="ph">Carga un archivo…</span></div>
 
-        <p style="font-size:11px;font-weight:600;color:#374151;margin:10px 0 5px">AFD — Autómata Finito Determinista <span style="font-size:10px;color:#2563eb;font-weight:400">(estados activos según el archivo)</span></p>
-        <div class="afd-wrap" id="afd-dynamic">
-          <!-- Se genera dinámicamente al compilar -->
-          <svg width="100%" viewBox="0 0 420 290" role="img">
-            <defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
-            <line x1="20" y1="143" x2="48" y2="143" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#ar)"/>
-            <polygon points="14,139 14,147 6,143" fill="#9ca3af"/>
-            <g style="cursor:pointer" onclick="qs('q0')"><circle cx="74" cy="143" r="24" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1"/><circle cx="74" cy="143" r="18" fill="none" stroke="#9ca3af" stroke-width="1" stroke-dasharray="3 2"/><text x="74" y="143" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="#6b7280">q0</text></g>
-            <text x="74" y="175" text-anchor="middle" font-size="9" fill="#9ca3af">inicio</text>
-            <g style="cursor:pointer" onclick="qs('q1')"><circle cx="200" cy="65" r="24" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1"/><text x="200" y="65" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="#9ca3af">q1</text></g>
-            <text x="200" y="97" text-anchor="middle" font-size="9" fill="#9ca3af">ident/kw</text>
-            <g style="cursor:pointer" onclick="qs('q2')"><circle cx="200" cy="150" r="24" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1"/><text x="200" y="150" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="#9ca3af">q2</text></g>
-            <text x="200" y="182" text-anchor="middle" font-size="9" fill="#9ca3af">int</text>
-            <g style="cursor:pointer" onclick="qs('q3')"><circle cx="200" cy="232" r="24" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1"/><text x="200" y="232" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="#9ca3af">q3</text></g>
-            <text x="200" y="264" text-anchor="middle" font-size="9" fill="#9ca3af">float</text>
-            <g style="cursor:pointer" onclick="qs('q4')"><circle cx="340" cy="85" r="24" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1"/><circle cx="340" cy="85" r="18" fill="none" stroke="#9ca3af" stroke-width="1"/><text x="340" y="85" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="#9ca3af">q4</text></g>
-            <text x="340" y="117" text-anchor="middle" font-size="9" fill="#9ca3af">op</text>
-            <g style="cursor:pointer" onclick="qs('q5')"><circle cx="340" cy="195" r="24" fill="#f3f4f6" stroke="#9ca3af" stroke-width="1"/><circle cx="340" cy="195" r="18" fill="none" stroke="#9ca3af" stroke-width="1"/><text x="340" y="195" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="#9ca3af">q5</text></g>
-            <text x="340" y="227" text-anchor="middle" font-size="9" fill="#9ca3af">token ✓</text>
-            <g style="cursor:pointer" onclick="qs('qe')"><circle cx="74" cy="248" r="20" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/><text x="74" y="248" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="700" fill="#b91c1c">qERR</text></g>
-            <path d="M94 130 Q144 92 176 72" fill="none" stroke="#e5e7eb" stroke-width="1" marker-end="url(#ar)"/>
-            <line x1="98" y1="143" x2="176" y2="148" fill="none" stroke="#e5e7eb" stroke-width="1" marker-end="url(#ar)"/>
-            <path d="M92 128 Q200 54 316 78" fill="none" stroke="#e5e7eb" stroke-width="1" marker-end="url(#ar)"/>
-            <line x1="74" y1="167" x2="74" y2="228" stroke="#dc2626" stroke-width="1.2" marker-end="url(#ar)" stroke-dasharray="3 2" opacity=".5"/>
-            <path d="M224 68 Q284 104 316 180" fill="none" stroke="#e5e7eb" stroke-width="1" marker-end="url(#ar)"/>
-            <line x1="224" y1="152" x2="316" y2="188" stroke="#e5e7eb" stroke-width="1" marker-end="url(#ar)"/>
-            <text x="74" y="290" text-anchor="middle" font-size="10" fill="#9ca3af" font-style="italic">Carga un archivo para ver los estados activos</text>
-          </svg>
+        <p class="lbl" style="margin-top:10px">AFD — estados activos según el archivo</p>
+        <div class="afd-wrap" id="afd-wrap">
+          <svg id="afd-svg" width="100%" viewBox="0 0 420 290"></svg>
         </div>
         <div id="state-info">Haz clic en un estado para ver su descripción.</div>
 
-        <!-- simulador -->
         <div class="sim-wrap">
-          <div class="sim-label">Simulador de cadena</div>
-          <input id="sim-input" placeholder="Ej: hilos_lana  |  3.50  |  +">
+          <div class="sim-lbl">Simulador de cadena</div>
+          <input class="sim-input" id="sim-input" placeholder="Ej: hilos_lana  |  3.50  |  +">
           <div class="sim-btns">
             <button onclick="simular()">Simular</button>
             <button onclick="resetSim()">Reset</button>
@@ -385,21 +266,18 @@ footer{background:#fff;border-top:1px solid #e8eaf0;padding:20px 32px;display:fl
           <div id="sim-result"></div>
         </div>
 
-        <!-- tabla de transiciones -->
-        <p style="font-size:11px;font-weight:600;color:#374151;margin:10px 0 4px">Tabla de Transiciones</p>
+        <p class="lbl" style="margin-top:10px;font-weight:600">Tabla de Transiciones</p>
         <div class="trans-wrap">
           <table class="trans">
-            <thead>
-              <tr>
-                <th>Estado</th>
-                <th style="background:#f0fdf4;color:#15803d">Letra/_</th>
-                <th style="background:#f5f3ff;color:#5b21b6">Dígito</th>
-                <th style="background:#f5f3ff;color:#5b21b6">Punto</th>
-                <th style="background:#fffbeb;color:#92400e">Op</th>
-                <th style="background:#f3f4f6">Esp/Fin</th>
-                <th style="background:#fef2f2;color:#b91c1c">Otro</th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th>Estado</th>
+              <th style="background:#f0fdf4;color:#15803d">letra/_</th>
+              <th style="background:#f5f3ff;color:#5b21b6">dígito</th>
+              <th style="background:#f5f3ff;color:#5b21b6">punto</th>
+              <th style="background:#fffbeb;color:#92400e">op</th>
+              <th>esp/fin</th>
+              <th style="background:#fef2f2;color:#b91c1c">otro</th>
+            </tr></thead>
             <tbody>
               <tr><td><code class="st" style="background:#dbeafe;color:#1e40af">→q0</code></td><td><code class="st" style="background:#dcfce7;color:#15803d">q1</code></td><td><code class="st" style="background:#ede9fe;color:#5b21b6">q2</code></td><td>—</td><td><code class="st" style="background:#fef3c7;color:#92400e">q4</code></td><td>—</td><td><code class="st" style="background:#fef2f2;color:#b91c1c">qERR</code></td></tr>
               <tr style="background:#f9fafb"><td><code class="st" style="background:#dcfce7;color:#15803d">q1</code></td><td><code class="st" style="background:#dcfce7;color:#15803d">q1↻</code></td><td><code class="st" style="background:#dcfce7;color:#15803d">q1↻</code></td><td>—</td><td><code class="st" style="background:#dcfce7;color:#15803d">q5*</code></td><td><code class="st" style="background:#dcfce7;color:#15803d">q5*</code></td><td><code class="st" style="background:#dcfce7;color:#15803d">q5*</code></td></tr>
@@ -415,92 +293,73 @@ footer{background:#fff;border-top:1px solid #e8eaf0;padding:20px 32px;display:fl
 
       <!-- 3.2 SINTÁCTICO -->
       <div class="a-card">
-        <div class="a-head">
-          <span class="a-title">3.2 Análisis Sintáctico</span>
-          <span class="a-badge badge-cfg">CFG</span>
-        </div>
-        <p style="font-size:11px;color:#6b7280;margin-bottom:6px">Gramática Libre de Contexto (CFG)</p>
+        <div class="a-head"><span class="a-title">3.2 Análisis Sintáctico</span><span class="a-badge badge-cfg">CFG</span></div>
+        <p class="lbl">Gramática Libre de Contexto (CFG)</p>
         <div class="cfg-box"><span class="cfg-kw">programa</span>    → instruccion*
 <span class="cfg-kw">instruccion</span> → tipo ID = expr
 <span class="cfg-kw">tipo</span>        → insumo | costo | calculo
 
-<span class="cfg-kw">expr</span>    <span class="cfg-arrow">→</span> <span class="cfg-sym">term</span> rest_E
-<span class="cfg-kw">rest_E</span>  <span class="cfg-arrow">→</span> ('+' | '-') <span class="cfg-sym">term</span> rest_E | ε
+<span class="cfg-kw">expr</span>    → term rest_E
+<span class="cfg-kw">rest_E</span>  → ('+' | '-') term rest_E | ε
 
-<span class="cfg-kw">term</span>    <span class="cfg-arrow">→</span> <span class="cfg-sym">factor</span> rest_T
-<span class="cfg-kw">rest_T</span>  <span class="cfg-arrow">→</span> ('*' | '/') <span class="cfg-sym">factor</span> rest_T | ε
+<span class="cfg-kw">term</span>    → factor rest_T
+<span class="cfg-kw">rest_T</span>  → ('*' | '/') factor rest_T | ε
 
-<span class="cfg-kw">factor</span>  <span class="cfg-arrow">→</span> NUMBER
-        | IDENTIFIER
-        | '(' expr ')'</div>
+<span class="cfg-kw">factor</span>  → NUMBER | IDENTIFIER | '(' expr ')'</div>
 
-        <p style="font-size:11px;font-weight:600;color:#374151;margin:10px 0 5px">Árbol Sintáctico (AST en vivo)</p>
-        <div id="ast-preview" style="background:#f8faff;border:1px solid #e8eaf0;border-radius:8px;padding:12px;min-height:80px;font-family:monospace;font-size:11px;white-space:pre;overflow-x:auto;color:#374151"><span class="live-placeholder">Carga un archivo para visualizar el AST generado por el parser</span></div>
+        <p class="lbl" style="margin-top:10px">Árbol Sintáctico (AST en vivo)</p>
+        <div id="ast-preview" style="background:#f8faff;border:1px solid #e8eaf0;border-radius:7px;padding:10px;min-height:70px;font-family:monospace;font-size:11px;white-space:pre;overflow-x:auto"><span class="ph">Carga un archivo para visualizar el AST…</span></div>
 
-        <p style="font-size:11px;font-weight:600;color:#374151;margin:10px 0 5px">Instrucciones Analizadas</p>
-        <div id="inst-live" style="min-height:40px"><span class="live-placeholder">Esperando archivo…</span></div>
+        <p class="lbl" style="margin-top:10px">Instrucciones Analizadas</p>
+        <div id="inst-live"><span class="ph">Esperando archivo…</span></div>
       </div>
 
       <!-- 3.3 SEMÁNTICO -->
       <div class="a-card">
-        <div class="a-head">
-          <span class="a-title">3.3 Semántico · Traducción</span>
-          <span class="a-badge badge-out">OUTPUT</span>
-        </div>
-        <p style="font-size:11px;color:#6b7280;margin-bottom:5px">Tabla de Símbolos (en vivo)</p>
-        <div id="sym-live"><span class="live-placeholder">Sin variables registradas</span></div>
+        <div class="a-head"><span class="a-title">3.3 Semántico · Traducción</span><span class="a-badge badge-out">OUTPUT</span></div>
+        <p class="lbl">Tabla de Símbolos (en vivo)</p>
+        <div id="sym-live"><span class="ph">Sin variables registradas</span></div>
 
-        <p style="font-size:11px;font-weight:600;color:#374151;margin:10px 0 5px">Traducción JSON → MongoDB</p>
+        <p class="lbl" style="margin-top:10px">Traducción JSON → MongoDB</p>
         <div class="json-out" id="json-out">{ "status": "waiting_upload" }</div>
 
-        <p style="font-size:11px;font-weight:600;color:#374151;margin:10px 0 4px">Estadísticas de Compilación</p>
+        <p class="lbl" style="margin-top:10px">Estadísticas de Compilación</p>
         <div class="stats-grid">
-          <div class="stat-box"><div class="stat-label">Insumos</div><div class="stat-val ins" id="cnt-ins">--</div></div>
-          <div class="stat-box"><div class="stat-label">Costos</div><div class="stat-val cos" id="cnt-cos">--</div></div>
-          <div class="stat-box"><div class="stat-label">Cálculos</div><div class="stat-val cal" id="cnt-cal">--</div></div>
+          <div class="stat-box"><div class="stat-lbl">Insumos</div><div class="stat-val" style="color:#4f46e5" id="cnt-ins">--</div></div>
+          <div class="stat-box"><div class="stat-lbl">Costos</div><div class="stat-val" style="color:#b45309" id="cnt-cos">--</div></div>
+          <div class="stat-box"><div class="stat-lbl">Cálculos</div><div class="stat-val" style="color:#059669" id="cnt-cal">--</div></div>
         </div>
-
-        <button class="btn-sync" id="btnSync" onclick="showPage('results')">
-          <span class="sync-dot" id="syncDot" style="background:#9ca3af"></span>
-          Sincronizar con Atlas
+        <button class="btn-sync" onclick="showPage('results')">
+          <span class="sdot" id="syncDot"></span>Sincronizar con Atlas
         </button>
       </div>
 
     </div>
   </div>
-</div><!-- /page-compiler -->
+</div>
 
-<!-- ══════════ PAGE: RESULTS ══════════ -->
+<!-- RESULTS -->
 <div class="page" id="page-results">
-  <div class="results-header">
-    <h2>Análisis Post-Compilación</h2>
-    <p>Visualización detallada de la estructura gramatical, el árbol de sintaxis abstracta (AST) y la resolución semántica del inventario procesado.</p>
-  </div>
-
-  <div id="res-error-panel" style="display:none"></div>
-  <div id="res-success" style="display:none">
-    <div class="results-grid">
-      <!-- izquierda -->
+  <div class="res-header"><h2>Análisis Post-Compilación</h2><p>Visualización detallada de la estructura gramatical, el árbol AST y la resolución semántica.</p></div>
+  <div id="res-err-panel"></div>
+  <div id="res-ok" style="display:none">
+    <div class="res-grid">
       <div>
-        <div class="cfg-panel">
-          <div class="panel-head">
-            <div class="panel-title">📐 Gramática Libre de Contexto (CFG)</div>
-            <span class="panel-badge">FORMAL LOGIC</span>
-          </div>
+        <div class="panel">
+          <div class="panel-head"><div class="panel-title">📐 Gramática Libre de Contexto</div><span class="panel-badge">FORMAL LOGIC</span></div>
           <div class="cfg-full"><span class="cfg-kw">programa</span>    → instruccion*
 <span class="cfg-kw">instruccion</span> → tipo ID = expr
 <span class="cfg-kw">tipo</span>        → insumo | costo_empaque | calculo
 
-<span class="cfg-kw">expr</span>    <span class="cfg-arrow">→</span> <span class="cfg-sym">term</span> rest_E
-<span class="cfg-kw">rest_E</span>  <span class="cfg-arrow">→</span> ('+' | '-') <span class="cfg-sym">term</span> rest_E | ε
+<span class="cfg-kw">expr</span>    → term rest_E
+<span class="cfg-kw">rest_E</span>  → ('+' | '-') term rest_E | ε
 
-<span class="cfg-kw">term</span>    <span class="cfg-arrow">→</span> <span class="cfg-sym">factor</span> rest_T
-<span class="cfg-kw">rest_T</span>  <span class="cfg-arrow">→</span> ('*' | '/') <span class="cfg-sym">factor</span> rest_T | ε
+<span class="cfg-kw">term</span>    → factor rest_T
+<span class="cfg-kw">rest_T</span>  → ('*' | '/') factor rest_T | ε
 
-<span class="cfg-kw">factor</span>  <span class="cfg-arrow">→</span> NUMBER | IDENTIFIER | '(' expr ')'</div>
+<span class="cfg-kw">factor</span>  → NUMBER | IDENTIFIER | '(' expr ')'</div>
         </div>
-
-        <div class="ast-panel" style="margin-top:16px">
+        <div class="panel" style="margin-top:14px">
           <div class="panel-head">
             <div class="panel-title">🌿 Árbol de Sintaxis Abstracta (AST)</div>
             <div class="ast-controls">
@@ -509,610 +368,486 @@ footer{background:#fff;border-top:1px solid #e8eaf0;padding:20px 32px;display:fl
               <button class="ast-btn" onclick="resetZoom()">⛶</button>
             </div>
           </div>
-          <div id="ast-canvas-wrap" style="overflow:auto;min-height:200px;background:#f8faff;border:1px solid #e8eaf0;border-radius:8px;padding:10px;margin-top:10px">
-            <p style="text-align:center;color:#9ca3af;font-size:12px;padding:40px 0">Compila un archivo para ver el árbol AST</p>
-          </div>
+          <div id="ast-wrap"><p class="ph" style="text-align:center;padding:40px 0">Compila un archivo para ver el AST</p></div>
         </div>
       </div>
-
-      <!-- derecha -->
       <div>
-        <div class="json-panel">
-          <div class="json-panel-head">
-            <div class="json-panel-title">📤 Traducción JSON (Semántico)</div>
-            <button class="btn-export" onclick="exportJSON()">Exportar</button>
-          </div>
-          <div class="json-out-full" id="json-full">{ }</div>
+        <div class="json-dark">
+          <div class="json-dark-head"><div class="json-dark-title">📤 Traducción JSON (Semántico)</div><button class="btn-export" onclick="exportJSON()">Exportar</button></div>
+          <div class="json-scroll" id="json-full"></div>
         </div>
-
         <div class="metrics-grid">
-          <div class="metric-card">
-            <div class="metric-label">Tokens procesados</div>
-            <div class="metric-val" id="m-tokens">0</div>
-            <div class="metric-bar"></div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-label">Tiempo estimado</div>
-            <div class="metric-val" id="m-tiempo">0ms</div>
-            <div class="metric-bar" style="background:#059669"></div>
-          </div>
+          <div class="metric-card"><div class="metric-lbl">Tokens procesados</div><div class="metric-val" id="m-tokens">0</div><div class="metric-bar"></div></div>
+          <div class="metric-card"><div class="metric-lbl">Tiempo de compilación</div><div class="metric-val" id="m-tiempo">0ms</div><div class="metric-bar" style="background:#059669"></div></div>
         </div>
-
-        <div class="cfg-panel" style="margin-top:12px">
-          <div class="panel-head">
-            <div class="panel-title">📊 Distribución de Tipos</div>
-            <span style="font-size:16px;cursor:pointer">⊕</span>
-          </div>
+        <div class="panel" style="margin-top:12px">
+          <div class="panel-head"><div class="panel-title">📊 Distribución de Tipos</div></div>
           <div id="dist-bars"></div>
         </div>
-
         <div class="val-row" id="val-row" style="display:none">
-          <div class="val-ok">
-            <div class="val-dot" id="val-dot"></div>
-            <div class="val-text">
-              <h4 id="val-title">Validación Exitosa</h4>
-              <p id="val-sub">Sincronizado con MongoDB Atlas</p>
-            </div>
-          </div>
-          <span class="val-icon" onclick="showPage('compiler')">↺</span>
+          <div class="val-ok"><div class="val-dot" id="val-dot"></div><div><div class="val-h" id="val-h">Validación Exitosa</div><div class="val-p" id="val-p">Sincronizado con MongoDB Atlas</div></div></div>
+          <button onclick="showPage('compiler')" style="border:none;background:none;cursor:pointer;font-size:18px;color:#9ca3af">↺</button>
         </div>
       </div>
     </div>
-
-    <!-- cards resumen -->
-    <div class="card" id="res-cards-wrap" style="margin-top:16px;display:none">
-      <div class="panel-head" style="margin-bottom:0">
-        <div class="panel-title">📦 Valores resueltos</div>
-      </div>
+    <div class="panel" id="res-cards-wrap" style="display:none;margin-top:14px">
+      <div class="panel-head"><div class="panel-title">📦 Valores resueltos</div></div>
       <div class="res-cards-grid" id="res-cards-grid"></div>
     </div>
   </div>
-</div><!-- /page-results -->
+</div>
 
-<!-- ══════════ PAGE: DOCS ══════════ -->
+<!-- DOCS -->
 <div class="page" id="page-docs">
-  <div class="results-header">
-    <h2>Documentación</h2>
-    <p>Referencia técnica del minicompilador USIL 2026.</p>
-  </div>
+  <div class="res-header"><h2>Documentación</h2><p>Referencia técnica del minicompilador USIL 2026.</p></div>
   <div class="card">
-    <div class="sec-head"><div class="sec-num">📄</div><h2 class="sec-title">Formato del archivo de entrada</h2></div>
-    <p style="font-size:13px;color:#374151;margin-bottom:12px">El archivo debe tener exactamente tres columnas en este orden:</p>
+    <div class="sec-head"><div class="sec-num">📄</div><h2 class="sec-title">Formato del archivo</h2></div>
     <table class="atbl">
       <tr><th>Columna</th><th>Tipo</th><th>Valores válidos</th><th>Ejemplo</th></tr>
       <tr><td>Tipo_Registro</td><td>Texto</td><td>insumo · costo_empaque · calculo</td><td>insumo</td></tr>
       <tr><td>Nombre_Variable</td><td>Identificador</td><td>[a-zA-Z_][a-zA-Z0-9_]*</td><td>hilos_lana</td></tr>
-      <tr><td>Valor_Asignacion</td><td>Número o expresión</td><td>150 · 3.50 · var1 + var2 * 1.2</td><td>hilos_lana + ojos_seguridad</td></tr>
+      <tr><td>Valor_Asignacion</td><td>Número o expresión</td><td>150 · 3.50 · var1 + var2</td><td>hilos_lana + ojos_seguridad</td></tr>
     </table>
   </div>
   <div class="card">
     <div class="sec-head"><div class="sec-num">⚠</div><h2 class="sec-title">Errores y cómo resolverlos</h2></div>
     <table class="atbl">
       <tr><th>Fase</th><th>Causa</th><th>Solución</th></tr>
-      <tr><td><span class="tok tok-op">LÉXICO</span></td><td>Carácter inválido ($, @, #) en el valor</td><td>Use solo letras, números, _ y operadores +−*/</td></tr>
-      <tr><td><span class="tok tok-id">SINTÁCTICO</span></td><td>Expresión malformada (ej: "150 + " sin operando)</td><td>Verifique que toda expresión tenga operandos completos</td></tr>
-      <tr><td><span class="tok tok-kw">SEMÁNTICO</span></td><td>Variable usada en cálculo sin haber sido declarada</td><td>Declare primero como insumo o costo_empaque</td></tr>
+      <tr><td><span class="tok tok-op">LÉXICO</span></td><td>Carácter inválido ($,@,#) en el valor</td><td>Use solo letras, números, _ y operadores +−*/</td></tr>
+      <tr><td><span class="tok tok-id">SINTÁCTICO</span></td><td>Expresión malformada (ej: "150 +")</td><td>Toda expresión debe tener operandos completos</td></tr>
+      <tr><td><span class="tok tok-kw">SEMÁNTICO</span></td><td>Variable usada sin haber sido declarada</td><td>Declare primero como insumo o costo_empaque</td></tr>
     </table>
   </div>
 </div>
 
-<!-- FOOTER -->
 <footer>
-  <div>
-    <div class="footer-brand">Inventory Compiler.</div>
-    <div class="footer-sub">© 2026 Minicompilador USIL. Utilitarian System Architecture.</div>
-  </div>
-  <div class="footer-links">
-    <a onclick="showPage('docs')">Documentation</a>
-    <a onclick="showPage('results')">Process Specs</a>
-    <a href="#">Support</a>
+  <div><div class="ft-brand">Inventory Compiler.</div><div class="ft-sub">© 2026 Minicompilador USIL. Utilitarian System Architecture.</div></div>
+  <div class="ft-links">
+    <button onclick="showPage('docs')">Documentation</button>
+    <button onclick="showPage('results')">Process Specs</button>
   </div>
 </footer>
 
 <script>
-/* ── NAVEGACIÓN ── */
-let currentPage='compiler';
-function showPage(p){
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.nav-link').forEach(x=>x.classList.remove('active'));
-  document.getElementById('page-'+p)?.classList.add('active');
-  document.getElementById('nav-'+p)?.classList.add('active');
-  currentPage=p;
-  if(p==='results') renderResultsPage();
+// ── NAVEGACIÓN ──
+let currentPage = 'compiler';
+function showPage(p) {
+  document.querySelectorAll('.page').forEach(function(x){ x.classList.remove('active'); });
+  document.querySelectorAll('.nav-link').forEach(function(x){ x.classList.remove('active'); });
+  var pg = document.getElementById('page-' + p);
+  var nl = document.getElementById('nav-' + p);
+  if (pg) pg.classList.add('active');
+  if (nl) nl.classList.add('active');
+  currentPage = p;
+  if (p === 'results') renderResultsPage();
 }
 
-/* ── ESTADO GLOBAL ── */
-let lastData=null, archivo=null, compilElapsed=0, astZoom=1, astZoomFactor=1;
+// ── ESTADO GLOBAL ──
+var lastData = null;
+var archivoFile = null;
+var compilElapsed = 0;
+var astZoomFactor = 1;
 
-/* ── UPLOAD ── */
-function doDrag(e,on){e.preventDefault();document.getElementById('uploadZone').classList.toggle('drag',on)}
-function doDrop(e){e.preventDefault();doDrag(e,false);pickFile(e.dataTransfer.files[0])}
-function pickFile(f){
-  if(!f)return; archivo=f;
-  document.getElementById('uploadZone').className='upload-zone selected';
-  document.getElementById('upload-icon').textContent='✅';
-  document.getElementById('upload-title').textContent=f.name;
-  document.getElementById('upload-sub').textContent=(f.size/1024).toFixed(1)+' KB · listo para compilar';
-  document.getElementById('btnC').disabled=false;
-  document.getElementById('btnT').textContent='⚙️ Compilar archivo';
+// ── UPLOAD ──
+var zone = document.getElementById('uploadZone');
+var inp  = document.getElementById('fileInput');
+
+zone.addEventListener('click', function() { inp.click(); });
+zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('drag'); });
+zone.addEventListener('dragleave', function() { zone.classList.remove('drag'); });
+zone.addEventListener('drop', function(e) {
+  e.preventDefault(); zone.classList.remove('drag');
+  if (e.dataTransfer.files[0]) pickFile(e.dataTransfer.files[0]);
+});
+inp.addEventListener('change', function() {
+  if (inp.files[0]) pickFile(inp.files[0]);
+});
+
+function pickFile(f) {
+  archivoFile = f;
+  zone.className = 'upload-zone selected';
+  document.getElementById('u-icon').textContent  = '✅';
+  document.getElementById('u-title').textContent = f.name;
+  document.getElementById('u-sub').textContent   = (f.size/1024).toFixed(1) + ' KB · listo para compilar';
+  document.getElementById('btnC').disabled = false;
+  document.getElementById('btnT').textContent = '⚙️ Compilar archivo';
 }
 
-/* ── PROGRESS ── */
-function setPhase(ph){
-  const order=['ps-lex','ps-sin','ps-sem','ps-db'];
-  const pct={lex:25,sin:50,sem:75,db:100};
-  const idxMap={lex:0,sin:1,sem:2,db:3};
-  const cur=idxMap[ph]??0;
-  order.forEach((id,i)=>{
-    const el=document.getElementById(id);
-    el.className='ps'+(i<cur?' done':i===cur?' active':'');
+// ── PROGRESS ──
+function setPhase(ph) {
+  var order = ['ps-lex','ps-sin','ps-sem','ps-db'];
+  var pct   = {lex:25, sin:50, sem:75, db:100};
+  var idx   = {lex:0,  sin:1,  sem:2,  db:3};
+  var cur   = idx[ph] !== undefined ? idx[ph] : 0;
+  order.forEach(function(id, i) {
+    var el = document.getElementById(id);
+    el.className = 'ps' + (i < cur ? ' done' : i === cur ? ' active' : '');
   });
-  document.getElementById('progFill').style.width=(pct[ph]||10)+'%';
+  document.getElementById('progFill').style.width = (pct[ph] || 10) + '%';
 }
-function setPhaseErr(fase){
-  const map={lexico:'ps-lex',sintactico:'ps-sin',semantico:'ps-sem',base_de_datos:'ps-db'};
-  const id=map[fase]; if(id) document.getElementById(id).className='ps error';
+function setPhaseErr(fase) {
+  var map = {lexico:'ps-lex', sintactico:'ps-sin', semantico:'ps-sem', base_de_datos:'ps-db'};
+  var id = map[fase]; if (id) document.getElementById(id).className = 'ps error';
 }
 
-/* ── AFD ESTADOS ── */
-const SD={
-  q0:{l:'q0 — Inicio',d:'Primer carácter decide el camino: letra→q1, dígito→q2, op→q4, inválido→qERR'},
-  q1:{l:'q1 — Identificador/KW',d:'Consume letras, dígitos y _. Al terminar emite IDENTIFIER, KW_INSUMO, KW_CALCULO, etc.'},
-  q2:{l:'q2 — Número entero',d:'Consume dígitos. Un punto "." lleva a q3 (float). Otro carácter acepta como NUMBER_INT.'},
-  q3:{l:'q3 — Parte decimal',d:'Consume dígitos tras el punto. Al terminar acepta como NUMBER_FLOAT.'},
-  q4:{l:'q4 — Operador ✓',d:'Acepta inmediatamente: OP_PLUS, OP_MINUS, OP_MUL, OP_DIV, LPAREN, RPAREN.'},
-  q5:{l:'q5 — Aceptación ✓',d:'Token completo emitido. Regresa a q0 para el siguiente token.'},
-  qe:{l:'qERR — Error léxico',d:'Carácter inválido ($@#…). Lanza ErrorLexico con posición exacta.'},
+// ── AFD ──
+var SD = {
+  q0:{l:'q0 — Inicio', d:'Primer carácter decide el camino: letra→q1, dígito→q2, op→q4, inválido→qERR'},
+  q1:{l:'q1 — Identificador/KW', d:'Consume letras, dígitos y _. Al terminar emite IDENTIFIER, KW_INSUMO, KW_CALCULO, etc.'},
+  q2:{l:'q2 — Número entero', d:'Consume dígitos. Un punto "." lleva a q3 (float). Otro carácter acepta como NUMBER_INT.'},
+  q3:{l:'q3 — Parte decimal', d:'Consume dígitos tras el punto. Al terminar acepta como NUMBER_FLOAT.'},
+  q4:{l:'q4 — Operador (aceptación)', d:'Acepta inmediatamente: OP_PLUS, OP_MINUS, OP_MUL, OP_DIV, LPAREN, RPAREN.'},
+  q5:{l:'q5 — Aceptación general', d:'Token completo emitido. Regresa a q0 para el siguiente token.'},
+  qe:{l:'qERR — Error léxico', d:'Carácter inválido ($@#…). Lanza ErrorLexico con posición exacta.'}
 };
-function qs(id){
-  const s=SD[id];if(!s)return;
-  document.getElementById('state-info').innerHTML=`<strong style="color:#2563eb">${s.l}</strong><br>${s.d}`;
+function qs(id) {
+  var s = SD[id]; if (!s) return;
+  document.getElementById('state-info').innerHTML =
+    '<strong style="color:#2563eb">' + s.l + '</strong><br>' + s.d;
 }
 
-/* ── AFD DINÁMICO ── 
-   Resalta los estados que realmente se usaron al procesar el archivo.
-   q0 siempre activo. q1 si hay IDENTIFIER/KW, q2 si hay NUMBER_INT,
-   q3 si hay NUMBER_FLOAT, q4 si hay operadores, q5 si hubo aceptación. */
-function drawAFD(tabla){
-  // Calcular qué estados se usaron basándose en la tabla de símbolos
-  const usedStates=new Set(['q0','q5']); // q0 y q5 siempre
-  tabla.forEach(r=>{
-    // tipo de registro → siempre pasa por q1 (palabra clave)
-    usedStates.add('q1');
-    // nombre variable → q1
-    if(/[a-zA-Z_]/.test(r.nombre)) usedStates.add('q1');
-    // valor/expresión
-    const expr=String(r.expresion||'');
-    if(/[a-zA-Z_]/.test(expr)) usedStates.add('q1');
-    if(/\d+\.\d+/.test(expr)){ usedStates.add('q2'); usedStates.add('q3'); }
-    else if(/\d/.test(expr)) usedStates.add('q2');
-    if(/[+\-*\/()]/.test(expr)) usedStates.add('q4');
-  });
+function drawAFD(tabla) {
+  var used = {q0:true, q5:true};
+  if (tabla && tabla.length) {
+    used.q1 = true;
+    tabla.forEach(function(r) {
+      var expr = String(r.expresion || '');
+      if (/[a-zA-Z_]/.test(expr)) used.q1 = true;
+      if (/\d+\.\d+/.test(expr))  { used.q2 = true; used.q3 = true; }
+      else if (/\d/.test(expr))    used.q2 = true;
+      if (/[+\-*\/()]/.test(expr)) used.q4 = true;
+    });
+  }
+  function sc(id) { return used[id] ? '#2563eb' : '#9ca3af'; }
+  function sf(id) { return used[id] ? '#dbeafe' : '#f3f4f6'; }
+  function st(id) { return used[id] ? '#1e40af' : '#6b7280'; }
+  function sw(id) { return used[id] ? 2 : 1; }
+  function lc(a,b) { return (used[a] || used[b]) ? '#2563eb' : '#e5e7eb'; }
+  function lo(a,b) { return (used[a] || used[b]) ? 1 : 0.35; }
+  function lw(a,b) { return (used[a] || used[b]) ? 1.8 : 1; }
 
-  // Colores: activo=azul vibrante, inactivo=gris claro
-  function sc(id){ return usedStates.has(id)?'#2563eb':'#9ca3af'; }
-  function sf(id){ return usedStates.has(id)?'#dbeafe':'#f3f4f6'; }
-  function st(id){ return usedStates.has(id)?'#1e40af':'#6b7280'; }
-  function sw(id){ return usedStates.has(id)?2:1; }
+  var mk = '<defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>';
 
-  const afdWrap=document.getElementById('afd-dynamic');
-  if(!afdWrap) return;
+  function circ(cx,cy,r,id,lbl,dbl){
+    var s = '<g style="cursor:pointer" onclick="qs('' + id + '')">';
+    s += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+sf(id)+'" stroke="'+sc(id)+'" stroke-width="'+sw(id)+'"/>';
+    if (dbl) s += '<circle cx="'+cx+'" cy="'+cy+'" r="'+(r-6)+'" fill="none" stroke="'+sc(id)+'" stroke-width="1"/>';
+    s += '<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="'+st(id)+'">'+lbl+'</text></g>';
+    return s;
+  }
+  function path(d,a,b,col,op,w) { return '<path d="'+d+'" fill="none" stroke="'+(col||lc(a,b))+'" stroke-width="'+(w||lw(a,b))+'" marker-end="url(#ar)" opacity="'+(op||lo(a,b))+'"/>'; }
+  function line(x1,y1,x2,y2,a,b) { return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+lc(a,b)+'" stroke-width="'+lw(a,b)+'" marker-end="url(#ar)" opacity="'+lo(a,b)+'"/>'; }
+  function txt(x,y,t,c) { return '<text x="'+x+'" y="'+y+'" text-anchor="middle" font-size="9" fill="'+(c||'#6b7280')+'">'+t+'</text>'; }
 
-  afdWrap.innerHTML=`<svg width="100%" viewBox="0 0 420 290" role="img">
-    <defs>
-      <marker id="ar2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
-        <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-      </marker>
-    </defs>
+  var svg = mk;
+  // entrada
+  svg += '<line x1="20" y1="143" x2="48" y2="143" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#ar)"/>';
+  svg += '<polygon points="14,139 14,147 6,143" fill="#9ca3af"/>';
+  // estados
+  svg += circ(74,143,24,'q0','q0',true) + txt(74,175,'inicio');
+  svg += circ(200,65,24,'q1','q1',false) + txt(200,97,'ident/kw' + (used.q1?' ✓':''));
+  svg += circ(200,150,24,'q2','q2',false) + txt(200,182,'int' + (used.q2?' ✓':''));
+  svg += circ(200,232,24,'q3','q3',false) + txt(200,264,'float' + (used.q3?' ✓':''));
+  svg += circ(340,85,24,'q4','q4',true)  + txt(340,117,'op' + (used.q4?' ✓':''));
+  svg += circ(340,195,24,'q5','q5',true) + txt(340,227,'token ✓');
+  // qERR siempre rojo
+  svg += '<g style="cursor:pointer" onclick="qs('qe')">';
+  svg += '<circle cx="74" cy="248" r="20" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>';
+  svg += '<text x="74" y="248" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="700" fill="#b91c1c">qERR</text></g>';
+  // transiciones
+  svg += path('M94 130 Q144 92 176 72','q0','q1') + txt(126,86,'letra/_',used.q1?'#1d4ed8':'#9ca3af');
+  svg += line(98,143,176,148,'q0','q2') + txt(136,136,'dígito',used.q2?'#5b21b6':'#9ca3af');
+  svg += path('M92 128 Q200 54 316 78','q0','q4') + txt(200,48,'+−*/( )',used.q4?'#92400e':'#9ca3af');
+  svg += '<line x1="74" y1="167" x2="74" y2="228" stroke="#dc2626" stroke-width="1.2" marker-end="url(#ar)" stroke-dasharray="3 2" opacity=".5"/>';
+  svg += txt(56,198,'otro','#dc2626');
+  svg += path('M188 40 Q196 20 212 32 Q222 44 212 58','q1','q1');
+  svg += txt(220,18,'letra/díg/_',used.q1?'#1d4ed8':'#9ca3af');
+  svg += path('M188 126 Q196 110 210 118 Q220 128 210 140','q2','q2');
+  svg += line(200,174,200,208,'q2','q3') + txt(213,192,'.',used.q3?'#5b21b6':'#9ca3af');
+  svg += path('M188 210 Q196 194 210 202 Q220 212 210 226','q3','q3');
+  svg += path('M224 68 Q284 104 316 180','q1','q5') + txt(290,112,'otro',used.q1?'#1d4ed8':'#9ca3af');
+  svg += line(224,152,316,188,'q2','q5');
+  svg += path('M224 228 Q278 228 316 202','q3','q5');
+  // leyenda
+  svg += '<rect x="4" y="2" width="138" height="24" rx="4" fill="#f8faff" stroke="#e8eaf0" stroke-width="0.5"/>';
+  svg += '<circle cx="16" cy="14" r="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>';
+  svg += '<text x="25" y="18" font-size="9" fill="#374151">estado activo (compilación)</text>';
 
-    <!-- flecha entrada -->
-    <line x1="20" y1="143" x2="48" y2="143" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#ar2)"/>
-    <polygon points="14,139 14,147 6,143" fill="#9ca3af"/>
-
-    <!-- q0 inicio (siempre activo) -->
-    <g style="cursor:pointer" onclick="qs('q0')">
-      <circle cx="74" cy="143" r="24" fill="${sf('q0')}" stroke="${sc('q0')}" stroke-width="${sw('q0')+1}"/>
-      <circle cx="74" cy="143" r="18" fill="none" stroke="${sc('q0')}" stroke-width="1" stroke-dasharray="3 2"/>
-      <text x="74" y="143" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="${st('q0')}">q0</text>
-    </g>
-    <text x="74" y="175" text-anchor="middle" font-size="9" fill="#6b7280">inicio</text>
-
-    <!-- q1 ident/kw -->
-    <g style="cursor:pointer" onclick="qs('q1')">
-      <circle cx="200" cy="65" r="24" fill="${sf('q1')}" stroke="${sc('q1')}" stroke-width="${sw('q1')}"/>
-      <text x="200" y="65" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="${st('q1')}">q1</text>
-    </g>
-    <text x="200" y="97" text-anchor="middle" font-size="9" fill="#6b7280">ident/kw${usedStates.has('q1')?' ✓':''}</text>
-
-    <!-- q2 int -->
-    <g style="cursor:pointer" onclick="qs('q2')">
-      <circle cx="200" cy="150" r="24" fill="${sf('q2')}" stroke="${sc('q2')}" stroke-width="${sw('q2')}"/>
-      <text x="200" y="150" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="${st('q2')}">q2</text>
-    </g>
-    <text x="200" y="182" text-anchor="middle" font-size="9" fill="#6b7280">int${usedStates.has('q2')?' ✓':''}</text>
-
-    <!-- q3 float -->
-    <g style="cursor:pointer" onclick="qs('q3')">
-      <circle cx="200" cy="232" r="24" fill="${sf('q3')}" stroke="${sc('q3')}" stroke-width="${sw('q3')}"/>
-      <text x="200" y="232" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="${st('q3')}">q3</text>
-    </g>
-    <text x="200" y="264" text-anchor="middle" font-size="9" fill="#6b7280">float${usedStates.has('q3')?' ✓':''}</text>
-
-    <!-- q4 op -->
-    <g style="cursor:pointer" onclick="qs('q4')">
-      <circle cx="340" cy="85" r="24" fill="${sf('q4')}" stroke="${sc('q4')}" stroke-width="${sw('q4')}"/>
-      <circle cx="340" cy="85" r="18" fill="none" stroke="${sc('q4')}" stroke-width="1"/>
-      <text x="340" y="85" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="${st('q4')}">q4</text>
-    </g>
-    <text x="340" y="117" text-anchor="middle" font-size="9" fill="#6b7280">op${usedStates.has('q4')?' ✓':''}</text>
-
-    <!-- q5 aceptacion -->
-    <g style="cursor:pointer" onclick="qs('q5')">
-      <circle cx="340" cy="195" r="24" fill="${sf('q5')}" stroke="${sc('q5')}" stroke-width="${sw('q5')}"/>
-      <circle cx="340" cy="195" r="18" fill="none" stroke="${sc('q5')}" stroke-width="1"/>
-      <text x="340" y="195" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="${st('q5')}">q5</text>
-    </g>
-    <text x="340" y="227" text-anchor="middle" font-size="9" fill="#6b7280">token ✓</text>
-
-    <!-- qERR -->
-    <g style="cursor:pointer" onclick="qs('qe')">
-      <circle cx="74" cy="248" r="20" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
-      <text x="74" y="248" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="700" fill="#b91c1c">qERR</text>
-    </g>
-
-    <!-- TRANSICIONES activas en azul, inactivas en gris -->
-    <!-- q0→q1 -->
-    <path d="M94 130 Q144 92 176 72" fill="none" stroke="${usedStates.has('q1')?'#2563eb':'#e5e7eb'}" stroke-width="${usedStates.has('q1')?1.8:1}" marker-end="url(#ar2)" opacity="${usedStates.has('q1')?1:.4}"/>
-    <text x="126" y="88" font-size="9" fill="${usedStates.has('q1')?'#1d4ed8':'#9ca3af'}">letra/_</text>
-
-    <!-- q0→q2 -->
-    <line x1="98" y1="143" x2="176" y2="148" fill="none" stroke="${usedStates.has('q2')?'#7c3aed':'#e5e7eb'}" stroke-width="${usedStates.has('q2')?1.8:1}" marker-end="url(#ar2)" opacity="${usedStates.has('q2')?1:.4}"/>
-    <text x="135" y="138" font-size="9" fill="${usedStates.has('q2')?'#5b21b6':'#9ca3af'}">dígito</text>
-
-    <!-- q0→q4 -->
-    <path d="M92 128 Q200 54 316 78" fill="none" stroke="${usedStates.has('q4')?'#d97706':'#e5e7eb'}" stroke-width="${usedStates.has('q4')?1.8:1}" marker-end="url(#ar2)" opacity="${usedStates.has('q4')?1:.4}"/>
-    <text x="200" y="50" text-anchor="middle" font-size="9" fill="${usedStates.has('q4')?'#92400e':'#9ca3af'}">+−*/( )</text>
-
-    <!-- q0→qERR -->
-    <line x1="74" y1="167" x2="74" y2="228" stroke="#dc2626" stroke-width="1.2" marker-end="url(#ar2)" stroke-dasharray="3 2" opacity=".5"/>
-    <text x="56" y="200" font-size="9" fill="#dc2626">otro</text>
-
-    <!-- q1 loop -->
-    <path d="M188 40 Q196 20 212 32 Q222 44 212 58" fill="none" stroke="${usedStates.has('q1')?'#2563eb':'#e5e7eb'}" stroke-width="1.2" marker-end="url(#ar2)" opacity="${usedStates.has('q1')?1:.3}"/>
-    <text x="222" y="22" font-size="9" fill="${usedStates.has('q1')?'#1d4ed8':'#9ca3af'}">letra/díg/_</text>
-
-    <!-- q2 loop -->
-    <path d="M188 126 Q196 110 210 118 Q220 128 210 140" fill="none" stroke="${usedStates.has('q2')?'#7c3aed':'#e5e7eb'}" stroke-width="1.2" marker-end="url(#ar2)" opacity="${usedStates.has('q2')?1:.3}"/>
-
-    <!-- q2→q3 -->
-    <line x1="200" y1="174" x2="200" y2="208" stroke="${usedStates.has('q3')?'#7c3aed':'#e5e7eb'}" stroke-width="${usedStates.has('q3')?1.8:1}" marker-end="url(#ar2)" opacity="${usedStates.has('q3')?1:.4}"/>
-    <text x="212" y="193" font-size="9" fill="${usedStates.has('q3')?'#5b21b6':'#9ca3af'}">.</text>
-
-    <!-- q3 loop -->
-    <path d="M188 210 Q196 194 210 202 Q220 212 210 226" fill="none" stroke="${usedStates.has('q3')?'#7c3aed':'#e5e7eb'}" stroke-width="1.2" marker-end="url(#ar2)" opacity="${usedStates.has('q3')?1:.3}"/>
-
-    <!-- q1→q5 -->
-    <path d="M224 68 Q284 104 316 180" fill="none" stroke="${usedStates.has('q1')?'#2563eb':'#e5e7eb'}" stroke-width="1.2" marker-end="url(#ar2)" opacity="${usedStates.has('q1')?1:.3}"/>
-    <text x="288" y="116" font-size="9" fill="${usedStates.has('q1')?'#1d4ed8':'#9ca3af'}">otro</text>
-
-    <!-- q2→q5 -->
-    <line x1="224" y1="152" x2="316" y2="188" stroke="${usedStates.has('q2')?'#7c3aed':'#e5e7eb'}" stroke-width="1.2" marker-end="url(#ar2)" opacity="${usedStates.has('q2')?1:.3}"/>
-
-    <!-- q3→q5 -->
-    <path d="M224 228 Q278 228 316 204" fill="none" stroke="${usedStates.has('q3')?'#7c3aed':'#e5e7eb'}" stroke-width="1.2" marker-end="url(#ar2)" opacity="${usedStates.has('q3')?1:.3}"/>
-
-    <!-- leyenda -->
-    <rect x="6" y="4" width="130" height="28" rx="4" fill="#f8faff" stroke="#e8eaf0" stroke-width="0.5"/>
-    <circle cx="18" cy="18" r="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>
-    <text x="26" y="22" font-size="9" fill="#374151">estado usado en compilación</text>
-  </svg>`;
+  document.getElementById('afd-svg').innerHTML = svg;
 }
 
-/* ── SIMULADOR ── */
-function classify(t){
-  const kw=['insumo','costo_empaque','calculo','costo_produccion','total'];
-  if(kw.includes(t.toLowerCase()))return{tipo:'KEYWORD',c:'#5b21b6',bg:'#ede9fe'};
-  if(/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(t))return{tipo:'IDENTIFIER',c:'#15803d',bg:'#dcfce7'};
-  if(/^\d+$/.test(t))return{tipo:'NUMBER_INT',c:'#5b21b6',bg:'#ede9fe'};
-  if(/^\d+\.\d+$/.test(t))return{tipo:'NUMBER_FLOAT',c:'#5b21b6',bg:'#ede9fe'};
-  if(/^[+\-*\/()]$/.test(t))return{tipo:'OPERADOR',c:'#92400e',bg:'#fef3c7'};
-  return{tipo:'ERROR',c:'#b91c1c',bg:'#fef2f2'};
+// Dibujar AFD inicial (todos inactivos)
+drawAFD(null);
+
+// ── SIMULADOR ──
+function classify(t) {
+  var kw = ['insumo','costo_empaque','calculo','costo_produccion','total'];
+  if (kw.indexOf(t.toLowerCase()) >= 0) return {tipo:'KEYWORD', c:'#5b21b6', bg:'#ede9fe'};
+  if (/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(t)) return {tipo:'IDENTIFIER', c:'#15803d', bg:'#dcfce7'};
+  if (/^\d+$/.test(t))       return {tipo:'NUMBER_INT',   c:'#5b21b6', bg:'#ede9fe'};
+  if (/^\d+\.\d+$/.test(t))  return {tipo:'NUMBER_FLOAT', c:'#5b21b6', bg:'#ede9fe'};
+  if (/^[+\-*\/()]$/.test(t)) return {tipo:'OPERADOR',    c:'#92400e', bg:'#fef3c7'};
+  return {tipo:'ERROR', c:'#b91c1c', bg:'#fef2f2'};
 }
-function simular(){
-  const raw=document.getElementById('sim-input').value.trim();if(!raw)return;
-  const chars=raw.split('');
-  document.getElementById('sim-chars').innerHTML=chars.map((c,i)=>`<span id="ch${i}">${c===' '?'␣':c}</span>`).join('');
-  document.getElementById('sim-result').innerHTML='';
-  let i=0;
-  (function step(){
-    if(i>0)document.getElementById('ch'+(i-1))?.classList.replace('cur','done');
-    if(i<chars.length){document.getElementById('ch'+i)?.classList.add('cur');i++;setTimeout(step,180);}
-    else{
-      const r=classify(raw);
-      document.getElementById('sim-result').innerHTML=r.tipo==='ERROR'
-        ?`<span style="color:#b91c1c">qERR — carácter inválido: "<b>${raw}</b>"</span>`
-        :`<span style="background:${r.bg};color:${r.c};padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;font-family:monospace">${r.tipo}</span> → aceptado en q5`;
+function simular() {
+  var raw = document.getElementById('sim-input').value.trim(); if (!raw) return;
+  var chars = raw.split('');
+  var cc = document.getElementById('sim-chars');
+  var rc = document.getElementById('sim-result');
+  cc.innerHTML = chars.map(function(c,i){ return '<span id="ch'+i+'">'+(c===' '?'␣':c)+'</span>'; }).join('');
+  rc.innerHTML = '';
+  var i = 0;
+  function step(){
+    if (i > 0) { var prev = document.getElementById('ch'+(i-1)); if(prev) prev.classList.replace('cur','done'); }
+    if (i < chars.length) { var el = document.getElementById('ch'+i); if(el) el.classList.add('cur'); i++; setTimeout(step,180); }
+    else {
+      var r = classify(raw);
+      rc.innerHTML = r.tipo === 'ERROR'
+        ? '<span style="color:#b91c1c">qERR — carácter inválido: <b>' + raw + '</b></span>'
+        : '<span style="background:'+r.bg+';color:'+r.c+';padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;font-family:monospace">'+r.tipo+'</span> → aceptado en q5';
     }
-  })();
+  }
+  step();
 }
-function resetSim(){
-  ['sim-chars','sim-result'].forEach(id=>document.getElementById(id).innerHTML='');
-  document.getElementById('sim-input').value='';
-  document.getElementById('state-info').textContent='Haz clic en un estado para ver su descripción.';
+function resetSim() {
+  document.getElementById('sim-chars').innerHTML = '';
+  document.getElementById('sim-result').innerHTML = '';
+  document.getElementById('sim-input').value = '';
+  document.getElementById('state-info').textContent = 'Haz clic en un estado para ver su descripción.';
 }
 
-/* ── COMPILAR ── */
-async function compilar(){
-  if(!archivo)return;
-  const _t0=Date.now();
-  document.getElementById('btnC').disabled=true;
-  document.getElementById('btnT').style.display='none';
-  document.getElementById('sp').style.display='block';
-  document.getElementById('progWrap').style.display='block';
+// ── COMPILAR ──
+async function compilar() {
+  if (!archivoFile) return;
+  var t0 = Date.now();
+  document.getElementById('btnC').disabled = true;
+  document.getElementById('btnT').style.display = 'none';
+  document.getElementById('sp').style.display = 'block';
+  document.getElementById('progWrap').style.display = 'block';
   setPhase('lex');
-  setTimeout(()=>setPhase('sin'),350);
-  setTimeout(()=>setPhase('sem'),700);
-  const fd=new FormData(); fd.append('archivo',archivo);
-  try{
-    const res=await fetch('/compile',{method:'POST',body:fd});
-    const data=await res.json();
-    compilElapsed=Date.now()-_t0;
-    lastData=data;
-    if(data.status==='ok'||data.status==='ok_sin_persistencia'){
-      setPhase('db'); fillCompilerPanels(data);
+  setTimeout(function(){ setPhase('sin'); }, 350);
+  setTimeout(function(){ setPhase('sem'); }, 700);
+  var fd = new FormData();
+  fd.append('archivo', archivoFile);
+  try {
+    var res  = await fetch('/compile', {method:'POST', body:fd});
+    var data = await res.json();
+    compilElapsed = Date.now() - t0;
+    lastData = data;
+    if (data.status === 'ok' || data.status === 'ok_sin_persistencia') {
+      setPhase('db');
+      fillPanels(data);
     } else {
-      setPhaseErr(data.fase||'lexico'); showCompilerError(data);
+      setPhaseErr(data.fase || 'lexico');
+      document.getElementById('tokens-live').innerHTML =
+        '<span style="color:#b91c1c;font-size:11px">❌ ' + (data.mensaje||'Error') + '</span>';
     }
-  }catch(e){
-    showCompilerError({status:'error',mensaje:'Error de red: '+e.message});
-  }finally{
-    document.getElementById('btnC').disabled=false;
-    document.getElementById('btnT').style.display='inline';
-    document.getElementById('sp').style.display='none';
+  } catch(e) {
+    document.getElementById('tokens-live').innerHTML =
+      '<span style="color:#b91c1c;font-size:11px">❌ Error de red: ' + e.message + '</span>';
+  } finally {
+    document.getElementById('btnC').disabled = false;
+    document.getElementById('btnT').style.display = 'inline';
+    document.getElementById('sp').style.display = 'none';
   }
 }
 
-/* ── FILL PANELS (compiler page) ── */
-function fillCompilerPanels(data){
-  const tabla=data.tabla_de_simbolos||[];
-  /* tokens */
-  const tm={insumo:'tok-kw',costo_empaque:'tok-op',calculo:'tok-id'};
-  document.getElementById('tokens-live').innerHTML=tabla.map(r=>
-    `<span class="tok ${tm[r.tipo]||'tok-id'}">${r.tipo.toUpperCase()}</span>`+
-    `<span class="tok tok-id">${r.nombre}</span>`+
-    `<span class="tok tok-num">${r.valor}</span>`
-  ).join('');
-  /* AST preview */
-  let ast='';
-  tabla.forEach(r=>{
-    if(r.tipo==='calculo'){
-      ast+=`ASIGNACION\n  ├─ ID: ${r.nombre}\n  └─ EXPR: ${r.expresion}\n       └─ eval = ${r.valor}\n\n`;
-    }
-  });
-  document.getElementById('ast-preview').innerHTML=ast||'(sin expresiones de cálculo)';
-  /* instrucciones */
-  document.getElementById('inst-live').innerHTML=tabla.map(r=>
-    `<div class="inst-row"><span class="inst-fila">F${r.fila}</span><span class="inst-tipo">${r.tipo}</span><span class="inst-nom">${r.nombre}</span><span class="inst-val">${r.valor}</span></div>`
-  ).join('');
-  /* tabla simbolos */
-  document.getElementById('sym-live').innerHTML=
-    `<table class="atbl sym-tbl">
-      <tr><th>Nombre</th><th>Tipo</th><th>Expresión</th><th>Valor</th></tr>
-      ${tabla.map(r=>{
-        const cls='row-'+(r.tipo==='insumo'?'ins':r.tipo==='costo_empaque'?'cos':'cal');
-        return `<tr class="${cls}"><td>${r.nombre}</td><td>${r.tipo}</td><td>${r.expresion}</td><td><b>${r.valor}</b></td></tr>`;
-      }).join('')}
-    </table>`;
-  /* AFD dinámico */
+// ── FILL PANELS ──
+function fillPanels(data) {
+  var tabla = data.tabla_de_simbolos || [];
+  // tokens
+  var tm = {insumo:'tok-kw', costo_empaque:'tok-op', calculo:'tok-id'};
+  document.getElementById('tokens-live').innerHTML = tabla.map(function(r){
+    return '<span class="tok '+(tm[r.tipo]||'tok-id')+'">'+r.tipo.toUpperCase()+'</span>'
+         + '<span class="tok tok-id">'+r.nombre+'</span>'
+         + '<span class="tok tok-num">'+r.valor+'</span>';
+  }).join('');
+  // AFD dinámico
   drawAFD(tabla);
+  // AST preview
+  var ast = '';
+  tabla.forEach(function(r){
+    if (r.tipo === 'calculo') {
+      ast += 'ASIGNACION
+  ├─ ID: ' + r.nombre + '
+  └─ EXPR: ' + r.expresion + '
+       └─ eval = ' + r.valor + '
 
-  /* JSON out */
-  document.getElementById('json-out').textContent=JSON.stringify(data.resumen||{},null,2);
-  /* stats */
-  document.getElementById('cnt-ins').textContent=tabla.filter(r=>r.tipo==='insumo').length;
-  document.getElementById('cnt-cos').textContent=tabla.filter(r=>r.tipo==='costo_empaque').length;
-  document.getElementById('cnt-cal').textContent=tabla.filter(r=>r.tipo==='calculo').length;
-  /* sync dot */
-  document.getElementById('syncDot').style.background=data.id_documento?'#22c55e':'#f59e0b';
-}
-
-function showCompilerError(data){
-  document.getElementById('tokens-live').innerHTML=`<span style="color:#b91c1c;font-size:11px">❌ ${data.mensaje||'Error'}</span>`;
-}
-
-/* ── RESULTS PAGE ── */
-let astZoomFactor=1;
-function renderResultsPage(){
-  if(!lastData){
-    document.getElementById('res-error-panel').style.display='block';
-    document.getElementById('res-error-panel').innerHTML='<div class="err-panel"><h3>Sin datos</h3><p>Primero compila un archivo en la sección Compiler.</p></div>';
-    document.getElementById('res-success').style.display='none';
-    return;
-  }
-  const data=lastData;
-  if(data.status!=='ok'&&data.status!=='ok_sin_persistencia'){
-    document.getElementById('res-error-panel').style.display='block';
-    document.getElementById('res-error-panel').innerHTML=
-      `<div class="err-panel"><h3>❌ Compilación fallida</h3><p><span class="err-fase">${data.fase||''}</span>${data.mensaje||''}</p></div>`;
-    document.getElementById('res-success').style.display='none';
-    return;
-  }
-  document.getElementById('res-error-panel').style.display='none';
-  document.getElementById('res-success').style.display='block';
-
-  const tabla=data.tabla_de_simbolos||[];
-  const elapsed=compilElapsed;
-
-  /* JSON full */
-  document.getElementById('json-full').innerHTML=syntaxHL(JSON.stringify({
-    status:'SUCCESS',
-    timestamp:new Date().toISOString(),
-    id:data.id_documento||'sin_persistencia',
-    inventory_compilation:tabla.map(r=>({type:r.tipo,id:r.nombre,value:r.valor,expr:r.expresion}))
-  },null,2));
-
-  /* metrics */
-  document.getElementById('m-tokens').textContent=tabla.length*3;
-  document.getElementById('m-tiempo').textContent=elapsed+'ms';
-
-  /* distribución */
-  const ins=tabla.filter(r=>r.tipo==='insumo').length;
-  const cos=tabla.filter(r=>r.tipo==='costo_empaque').length;
-  const cal=tabla.filter(r=>r.tipo==='calculo').length;
-  const tot=tabla.length||1;
-  document.getElementById('dist-bars').innerHTML=
-    distRow('Insumos',ins,tot,'#2563eb')+
-    distRow('Costos',cos,tot,'#6b7280')+
-    distRow('Cálculos',cal,tot,'#374151');
-
-  /* validación */
-  document.getElementById('val-row').style.display='flex';
-  if(data.id_documento){
-    document.getElementById('val-dot').style.background='#22c55e';
-    document.getElementById('val-title').textContent='Validación Exitosa';
-    document.getElementById('val-sub').textContent='Sincronizado con MongoDB Atlas · Clúster Prod-01';
-  } else {
-    document.getElementById('val-dot').style.background='#f59e0b';
-    document.getElementById('val-title').textContent='Compilado sin persistencia';
-    document.getElementById('val-sub').textContent='Configura MONGODB_URI para sincronizar';
-  }
-
-  /* cards resumen */
-  const res=data.resumen||{};
-  const keys=Object.keys(res);
-  if(keys.length){
-    document.getElementById('res-cards-wrap').style.display='block';
-    document.getElementById('res-cards-grid').innerHTML=keys.map(k=>
-      `<div class="res-card"><div class="res-label">${k}</div><div class="res-val">${Number(res[k]).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2})}</div></div>`
-    ).join('');
-  }
-
-  /* AST canvas */
-  setTimeout(()=>drawAST(tabla),100);
-}
-
-function distRow(label,n,tot,color){
-  const pct=tot>0?Math.round(n/tot*100):0;
-  return `<div class="dist-row">
-    <span class="dist-label">${label}</span>
-    <div class="dist-bar-wrap"><div class="dist-bar" style="width:${pct}%;background:${color}"></div></div>
-    <span class="dist-pct">${pct}%</span>
-  </div>`;
-}
-
-function syntaxHL(json){
-  return json
-    .replace(/("[\w]+")\s*:/g,'<span style="color:#89b4fa">$1</span>:')
-    .replace(/:\s*(".*?")/g,': <span style="color:#a6e3a1">$1</span>')
-    .replace(/:\s*(\d+\.?\d*)/g,': <span style="color:#fab387">$1</span>');
-}
-
-/* ── AST SVG DINÁMICO ── */
-function drawAST(tabla){
-  const wrap=document.getElementById('ast-canvas-wrap');
-  if(!tabla||!tabla.length){
-    wrap.innerHTML='<p style="text-align:center;color:#9ca3af;padding:40px;font-size:12px">Sin datos para mostrar</p>';
-    return;
-  }
-  // Construir árbol completo: PROGRAMA → cada instrucción → sus operandos
-  const NW=100,NH=32,HGAP=24,VGAP=56;
-  // calcular nodos por instrucción (tipo + nombre_var + cada token del valor)
-  function tokenize(expr){
-    // extraer identificadores y operadores de la expresión
-    return expr.split(/([+\-*\/])/).map(s=>s.trim()).filter(Boolean);
-  }
-  // cada instrucción tiene: nodo asignación (nombre), hijo izq=tipo, hijo der=expr tree
-  const instrNodes=tabla.map((r,i)=>{
-    const toks=tokenize(r.expresion);
-    return {r,i,toks};
+';
+    }
   });
-  // calcular ancho total necesario
-  const minChildrenPerRow=instrNodes.length;
-  const totalW=Math.max(600, minChildrenPerRow*(NW+HGAP)+HGAP);
-  const maxDepth=3; // PROGRAMA / ASIGN / hijos
-  const totalH=(maxDepth+1)*(NH+VGAP)+60;
+  document.getElementById('ast-preview').innerHTML = ast || '(sin expresiones de cálculo)';
+  // instrucciones
+  document.getElementById('inst-live').innerHTML = tabla.map(function(r){
+    return '<div class="inst-row"><span class="inst-fila">F'+r.fila+'</span>'
+         + '<span class="inst-tipo">'+r.tipo+'</span>'
+         + '<span class="inst-nom">'+r.nombre+'</span>'
+         + '<span class="inst-val">'+r.valor+'</span></div>';
+  }).join('');
+  // tabla símbolos
+  var symRows = tabla.map(function(r){
+    var cls = r.tipo==='insumo' ? '' : (r.tipo==='costo_empaque' ? 'row-cos' : 'row-cal');
+    return '<tr class="'+cls+'"><td>'+r.nombre+'</td><td>'+r.tipo+'</td><td style="max-width:90px;overflow:hidden;text-overflow:ellipsis">'+r.expresion+'</td><td><b>'+r.valor+'</b></td></tr>';
+  }).join('');
+  document.getElementById('sym-live').innerHTML =
+    '<table class="atbl sym-tbl"><tr><th>Nombre</th><th>Tipo</th><th>Expresión</th><th>Valor</th></tr>' + symRows + '</table>';
+  // JSON out
+  document.getElementById('json-out').textContent = JSON.stringify(data.resumen||{}, null, 2);
+  // stats
+  document.getElementById('cnt-ins').textContent = tabla.filter(function(r){ return r.tipo==='insumo'; }).length;
+  document.getElementById('cnt-cos').textContent = tabla.filter(function(r){ return r.tipo==='costo_empaque'; }).length;
+  document.getElementById('cnt-cal').textContent = tabla.filter(function(r){ return r.tipo==='calculo'; }).length;
+  // sync dot
+  document.getElementById('syncDot').style.background = data.id_documento ? '#22c55e' : '#f59e0b';
+}
 
-  let svg=`<svg width="${totalW}" height="${totalH}" viewBox="0 0 ${totalW} ${totalH}" 
-    style="font-family:-apple-system,sans-serif;display:block;transform:scale(${astZoomFactor});transform-origin:top left">`;
-
-  // helpers SVG
-  function node(x,y,w,h,label,fg,bg,bold){
-    const rx2=x-w/2, ry2=y-h/2;
-    return `<rect x="${rx2}" y="${ry2}" width="${w}" height="${h}" rx="5" 
-      fill="${bg}" stroke="#d1d5db" stroke-width="1"/>
-      <text x="${x}" y="${y+1}" text-anchor="middle" dominant-baseline="central" 
-        font-size="10" font-weight="${bold?700:500}" fill="${fg}">${label}</text>`;
+// ── RESULTS PAGE ──
+function renderResultsPage() {
+  var errEl = document.getElementById('res-err-panel');
+  var okEl  = document.getElementById('res-ok');
+  if (!lastData) {
+    errEl.innerHTML = '<div class="err-panel"><h3>Sin datos</h3><p>Primero compila un archivo en la sección Compiler.</p></div>';
+    okEl.style.display = 'none'; return;
   }
-  function edge(x1,y1,x2,y2){
-    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#d1d5db" stroke-width="1"/>`;
+  var data = lastData;
+  if (data.status !== 'ok' && data.status !== 'ok_sin_persistencia') {
+    errEl.innerHTML = '<div class="err-panel"><h3>❌ Compilación fallida</h3><p><span class="efase">'+(data.fase||'')+'</span>'+(data.mensaje||'')+'</p></div>';
+    okEl.style.display = 'none'; return;
+  }
+  errEl.innerHTML = '';
+  okEl.style.display = 'block';
+  var tabla = data.tabla_de_simbolos || [];
+  var elapsed = compilElapsed;
+  // JSON
+  var jsonObj = {
+    status: 'SUCCESS',
+    timestamp: new Date().toISOString(),
+    id: data.id_documento || 'sin_persistencia',
+    inventory_compilation: tabla.map(function(r){ return {type:r.tipo, id:r.nombre, value:r.valor, expr:r.expresion}; })
+  };
+  document.getElementById('json-full').innerHTML = syntaxHL(JSON.stringify(jsonObj, null, 2));
+  // métricas (fijas, no aumentan)
+  document.getElementById('m-tokens').textContent = tabla.length * 3;
+  document.getElementById('m-tiempo').textContent = elapsed + 'ms';
+  // distribución
+  var ins = tabla.filter(function(r){ return r.tipo==='insumo'; }).length;
+  var cos = tabla.filter(function(r){ return r.tipo==='costo_empaque'; }).length;
+  var cal = tabla.filter(function(r){ return r.tipo==='calculo'; }).length;
+  var tot = tabla.length || 1;
+  document.getElementById('dist-bars').innerHTML =
+    distRow('Insumos', ins, tot, '#2563eb') +
+    distRow('Costos',  cos, tot, '#6b7280') +
+    distRow('Cálculos',cal, tot, '#374151');
+  // validación
+  document.getElementById('val-row').style.display = 'flex';
+  document.getElementById('val-dot').style.background = data.id_documento ? '#22c55e' : '#f59e0b';
+  document.getElementById('val-h').textContent = data.id_documento ? 'Validación Exitosa' : 'Sin persistencia';
+  document.getElementById('val-p').textContent = data.id_documento
+    ? 'Sincronizado con MongoDB Atlas · Clúster Prod-01'
+    : 'Configura MONGODB_URI para sincronizar';
+  // cards
+  var res = data.resumen || {};
+  var keys = Object.keys(res);
+  if (keys.length) {
+    document.getElementById('res-cards-wrap').style.display = 'block';
+    document.getElementById('res-cards-grid').innerHTML = keys.map(function(k){
+      return '<div class="rc"><div class="rc-lbl">'+k+'</div><div class="rc-val">'+Number(res[k]).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div></div>';
+    }).join('');
+  }
+  // AST
+  setTimeout(function(){ drawASTsvg(tabla); }, 80);
+}
+
+function distRow(label, n, tot, color) {
+  var pct = tot > 0 ? Math.round(n/tot*100) : 0;
+  return '<div class="dist-row"><span class="dist-lbl">'+label+'</span>'
+       + '<div class="dist-bw"><div class="dist-bf" style="width:'+pct+'%;background:'+color+'"></div></div>'
+       + '<span class="dist-pct">'+pct+'%</span></div>';
+}
+
+function syntaxHL(json) {
+  return json
+    .replace(/("[\w]+")\s*:/g, '<span style="color:#89b4fa">$1</span>:')
+    .replace(/:\s*(".*?")/g,   ': <span style="color:#a6e3a1">$1</span>')
+    .replace(/:\s*(\d+\.?\d*)/g, ': <span style="color:#fab387">$1</span>');
+}
+
+// ── AST SVG DINÁMICO ──
+function drawASTsvg(tabla) {
+  var wrap = document.getElementById('ast-wrap');
+  if (!tabla || !tabla.length) {
+    wrap.innerHTML = '<p class="ph" style="text-align:center;padding:40px 0">Sin datos para mostrar</p>';
+    return;
+  }
+  var NW=100, NH=32, HGAP=20, VGAP=54;
+  var n = tabla.length;
+  var W = Math.max(580, n * (NW + HGAP) + 60);
+  var rows = 4; // PROGRAMA / ASIGN / tipo+expr / operandos
+  var H = rows * (NH + VGAP) + 60;
+
+  function nd(cx,cy,w,h,lbl,fg,bg) {
+    return '<rect x="'+(cx-w/2)+'" y="'+(cy-h/2)+'" width="'+w+'" height="'+h+'" rx="5" fill="'+bg+'" stroke="#d1d5db" stroke-width="1"/>'
+         + '<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-size="10" font-weight="600" fill="'+fg+'">'+lbl+'</text>';
+  }
+  function ed(x1,y1,x2,y2) {
+    return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="#d1d5db" stroke-width="1"/>';
   }
 
-  const rootX=totalW/2, rootY=30+NH/2;
-  // nodo raíz PROGRAMA
-  svg+=node(rootX,rootY,NW+20,NH,'PROGRAMA','#1e40af','#dbeafe',true);
+  var svg = '<svg width="'+W+'" height="'+H+'" style="transform:scale('+astZoomFactor+');transform-origin:top left;display:block">';
+  var rootX = W/2, rootY = 24 + NH/2;
+  svg += nd(rootX, rootY, NW+20, NH, 'PROGRAMA', '#1e40af', '#dbeafe');
 
-  // posición X de cada instrucción
-  const slotW=(totalW)/(instrNodes.length);
-  instrNodes.forEach(({r,i,toks})=>{
-    const cx=slotW*i+slotW/2;
-    const cy=rootY+(NH/2)+(VGAP)+NH/2;
-    // línea raíz → instrucción
-    svg+=edge(rootX,rootY+NH/2,cx,cy-NH/2);
-    // nodo instrucción = nombre variable
-    svg+=node(cx,cy,NW,NH,r.nombre,'#374151','#f3f4f6',true);
+  var slotW = W / n;
+  tabla.forEach(function(r, i) {
+    var cx = slotW * i + slotW/2;
+    var cy = rootY + NH/2 + VGAP + NH/2;
+    svg += ed(rootX, rootY+NH/2, cx, cy-NH/2);
+    svg += nd(cx, cy, NW, NH, r.nombre, '#374151', '#f3f4f6');
 
-    // hijos: tipo (izq) y expresión (der)
-    const lx=cx-NW/2-HGAP/2-NW/2;
-    const rx2=cx+NW/2+HGAP/2+NW/2;
-    const cy2=cy+(NH/2)+VGAP+NH/2;
+    var lx = cx - NW/2 - HGAP/2 - NW/2;
+    var rx = cx + NW/2 + HGAP/2 + NW/2;
+    var cy2 = cy + NH/2 + VGAP + NH/2;
+    svg += ed(cx, cy+NH/2, lx, cy2-NH/2);
+    svg += ed(cx, cy+NH/2, rx, cy2-NH/2);
 
-    const tipoBg=r.tipo==='insumo'?'#ede9fe':r.tipo==='costo_empaque'?'#fef3c7':'#dcfce7';
-    const tipoFg=r.tipo==='insumo'?'#5b21b6':r.tipo==='costo_empaque'?'#92400e':'#15803d';
-    svg+=edge(cx,cy+NH/2,lx,cy2-NH/2);
-    svg+=node(lx,cy2,NW,NH,r.tipo,tipoFg,tipoBg,false);
+    var tipoBg = r.tipo==='insumo' ? '#ede9fe' : r.tipo==='costo_empaque' ? '#fef3c7' : '#dcfce7';
+    var tipoFg = r.tipo==='insumo' ? '#5b21b6' : r.tipo==='costo_empaque' ? '#92400e' : '#15803d';
+    svg += nd(lx, cy2, NW, NH, r.tipo, tipoFg, tipoBg);
 
-    // expresión: si tiene operador, mostrar árbol con op en centro
-    const hasOp=/[+\-*\/]/.test(r.expresion);
-    if(hasOp && r.tipo==='calculo'){
-      const op=(r.expresion.match(/([+\-*\/])/)||['='])[1];
-      const parts=r.expresion.split(/[+\-*\/]/).map(s=>s.trim());
-      svg+=edge(cx,cy+NH/2,rx2,cy2-NH/2);
-      svg+=node(rx2,cy2,NW,NH,`expr (${op})`,'#1d4ed8','#dbeafe',false);
-      // sub-hijos del operador
-      if(parts.length>=2){
-        const cy3=cy2+(NH/2)+VGAP+NH/2;
-        const lx3=rx2-NW/2-8;
-        const rx3=rx2+NW/2+8;
-        svg+=edge(rx2,cy2+NH/2,lx3,cy3-NH/2);
-        svg+=edge(rx2,cy2+NH/2,rx3,cy3-NH/2);
-        svg+=node(lx3,cy3,NW,NH,parts[0],'#374151','#f9fafb',false);
-        svg+=node(rx3,cy3,NW,NH,parts[1],'#374151','#f9fafb',false);
+    var hasOp = /[+\-*\/]/.test(r.expresion);
+    if (hasOp && r.tipo === 'calculo') {
+      var op = (r.expresion.match(/([+\-*\/])/) || ['','='])[1];
+      svg += nd(rx, cy2, NW, NH, 'expr('+op+')', '#1d4ed8', '#dbeafe');
+      var parts = r.expresion.split(/[+\-*\/]/).map(function(s){ return s.trim(); });
+      if (parts.length >= 2) {
+        var cy3 = cy2 + NH/2 + VGAP + NH/2;
+        var lx3 = rx - NW/2 - 10;
+        var rx3 = rx + NW/2 + 10;
+        svg += ed(rx, cy2+NH/2, lx3, cy3-NH/2);
+        svg += ed(rx, cy2+NH/2, rx3, cy3-NH/2);
+        svg += nd(lx3, cy3, NW, NH, parts[0], '#374151', '#f9fafb');
+        svg += nd(rx3, cy3, NW, NH, parts[1], '#374151', '#f9fafb');
       }
     } else {
-      // valor literal directo
-      svg+=edge(cx,cy+NH/2,rx2,cy2-NH/2);
-      svg+=node(rx2,cy2,NW,NH,r.expresion,'#374151','#f9fafb',false);
+      svg += nd(rx, cy2, NW, NH, String(r.expresion).substring(0,12), '#374151', '#f9fafb');
     }
   });
-
-  svg+='</svg>';
-  // ajustar altura del wrapper al contenido
-  const realH=maxDepth*2*(NH+VGAP)+60;
-  wrap.style.minHeight=realH+'px';
-  wrap.innerHTML=svg;
+  svg += '</svg>';
+  wrap.style.minHeight = H + 'px';
+  wrap.innerHTML = svg;
 }
-function zoomAST(f){
-  astZoomFactor=Math.max(0.3,Math.min(2,astZoomFactor*f));
-  if(lastData) drawAST(lastData.tabla_de_simbolos||[]);
-}
-function resetZoom(){astZoomFactor=1; if(lastData) drawAST(lastData.tabla_de_simbolos||[])}
 
-/* ── EXPORT ── */
-function exportJSON(){
-  if(!lastData)return;
-  const blob=new Blob([JSON.stringify(lastData,null,2)],{type:'application/json'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='compilacion_usil.json'; a.click();
+function zoomAST(f) {
+  astZoomFactor = Math.max(0.3, Math.min(2, astZoomFactor * f));
+  if (lastData) drawASTsvg(lastData.tabla_de_simbolos || []);
+}
+function resetZoom() { astZoomFactor = 1; if (lastData) drawASTsvg(lastData.tabla_de_simbolos || []); }
+
+function exportJSON() {
+  if (!lastData) return;
+  var blob = new Blob([JSON.stringify(lastData, null, 2)], {type:'application/json'});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'compilacion_usil.json'; a.click();
 }
 </script>
 </body>
