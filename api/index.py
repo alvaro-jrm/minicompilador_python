@@ -97,6 +97,16 @@ nav{background:#fff;border-bottom:1px solid #e8eaf0;padding:0 32px;display:flex;
 .tok-num{background:#dcfce7;color:#166534}
 .tok-op{background:#fef3c7;color:#92400e}
 .tok-par{background:#fce7f3;color:#9d174d}
+/* ── TOKEN CARDS (NUEVA VISUALIZACIÓN LÉXICA) ── */
+.tok-card{display:inline-flex;flex-direction:column;align-items:center;border:1.5px solid #e5e7eb;border-radius:8px;padding:5px 9px;margin:3px;min-width:68px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.07);vertical-align:top}
+.tok-card-type{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;padding:1px 6px;border-radius:3px;white-space:nowrap}
+.tok-card-val{font-size:12px;font-family:monospace;font-weight:600;color:#1a1a2e;word-break:break-all;text-align:center}
+.tok-section{margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #f3f4f6}
+.tok-section:last-child{border-bottom:none;margin-bottom:0}
+.tok-section-lbl{font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.tok-section-lbl::after{content:'';flex:1;height:1px;background:#f3f4f6}
+.tok-section-lbl span{background:#f3f4f6;color:#374151;padding:1px 6px;border-radius:3px;font-size:9px;text-transform:none;letter-spacing:0}
+/* ─────────────────────────────────────────── */
 table.atbl{width:100%;border-collapse:collapse;font-size:11px}
 table.atbl th{background:#f8faff;padding:5px 6px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e8eaf0}
 table.atbl td{padding:4px 6px;border-bottom:1px solid #f3f4f6;font-family:monospace;overflow:hidden;text-overflow:ellipsis;max-width:120px}
@@ -125,13 +135,12 @@ code.st{padding:1px 4px;border-radius:3px;font-size:10px}
 .inst-tipo{font-weight:600;color:#2563eb;min-width:80px}
 .inst-nom{color:#374151;flex:1;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .inst-val{color:#059669;font-weight:600;font-family:monospace}
-table.sym-tbl{table-layout:auto;width:100%}
+table.sym-tbl{table-layout:auto;width:max-content;min-width:100%}
 table.sym-tbl td{white-space:nowrap;padding:5px 8px;border-bottom:1px solid #f3f4f6;font-family:monospace;font-size:11px}
 table.sym-tbl th{white-space:nowrap;background:#f8faff;padding:5px 8px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e8eaf0}
 table.sym-tbl td:first-child{font-weight:600;color:#4f46e5}
 table.sym-tbl tr.row-cos td:first-child{color:#b45309}
 table.sym-tbl tr.row-cal td:first-child{color:#059669}
-.sym-scroll{overflow-x:auto;width:100%}
 .json-out{background:#1e1e2e;border-radius:7px;padding:10px;font-family:monospace;font-size:11px;color:#cdd6f4;white-space:pre-wrap;min-height:48px;overflow-x:auto;border:1px solid #2a2a3e}
 .stats-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-top:7px}
 .stat-box{background:#f8faff;border-radius:7px;padding:9px;text-align:center;border:1px solid #e8eaf0}
@@ -250,8 +259,8 @@ footer{background:#fff;border-top:1px solid #e8eaf0;padding:18px 28px;display:fl
       <!-- 3.1 LÉXICO -->
       <div class="a-card">
         <div class="a-head"><span class="a-title">3.1 Análisis Léxico</span><span class="a-badge badge-live">LIVE</span></div>
-        <p class="lbl">Tokens detectados</p>
-        <div id="tokens-live"><span class="ph">Carga un archivo…</span></div>
+        <p class="lbl">Lexemas por instrucción</p>
+        <div id="tokens-live"><span class="ph">Carga un archivo para ver los tokens…</span></div>
 
         <p class="lbl" style="margin-top:10px">AFD — estados activos según el archivo</p>
         <div class="afd-wrap" id="afd-wrap">
@@ -312,7 +321,7 @@ footer{background:#fff;border-top:1px solid #e8eaf0;padding:18px 28px;display:fl
 <span class="cfg-kw">factor</span>  → NUMBER | IDENTIFIER | '(' expr ')'</div>
 
         <p class="lbl" style="margin-top:10px">Árbol Sintáctico (AST en vivo)</p>
-        <div id="ast-preview" style="background:#f8faff;border:1px solid #e8eaf0;border-radius:7px;padding:10px;min-height:70px;font-family:monospace;font-size:11px;white-space:pre;overflow-x:auto"><span class="ph">Carga un archivo para visualizar el AST…</span></div>
+        <div id="ast-preview" style="background:#f8faff;border:1px solid #e8eaf0;border-radius:7px;padding:10px;min-height:70px;font-family:monospace;font-size:11px;white-space:pre;overflow-x:auto;line-height:1.7"><span class="ph">Carga un archivo para visualizar el AST…</span></div>
 
         <p class="lbl" style="margin-top:10px">Instrucciones Analizadas</p>
         <div id="inst-live"><span class="ph">Esperando archivo…</span></div>
@@ -433,8 +442,8 @@ footer{background:#fff;border-top:1px solid #e8eaf0;padding:18px 28px;display:fl
 </footer>
 
 <script>
-// ── NAVEGACIÓN ──
-let currentPage = 'compiler';
+// -- NAVEGACION --
+var currentPage = 'compiler';
 function showPage(p) {
   document.querySelectorAll('.page').forEach(function(x){ x.classList.remove('active'); });
   document.querySelectorAll('.nav-link').forEach(function(x){ x.classList.remove('active'); });
@@ -446,25 +455,28 @@ function showPage(p) {
   if (p === 'results') renderResultsPage();
 }
 
-// ── ESTADO GLOBAL ──
+// -- ESTADO GLOBAL --
 var lastData = null;
 var archivoFile = null;
 var compilElapsed = 0;
 var astZoomFactor = 1;
 
-// ── UPLOAD ──
-var zone = document.getElementById('uploadZone');
-var inp  = document.getElementById('fileInput');
+// -- UPLOAD --
+var zone, inp;
+document.addEventListener('DOMContentLoaded', function() {
+  zone = document.getElementById('uploadZone');
+  inp  = document.getElementById('fileInput');
 
-zone.addEventListener('click', function() { inp.click(); });
-zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('drag'); });
-zone.addEventListener('dragleave', function() { zone.classList.remove('drag'); });
-zone.addEventListener('drop', function(e) {
-  e.preventDefault(); zone.classList.remove('drag');
-  if (e.dataTransfer.files[0]) pickFile(e.dataTransfer.files[0]);
-});
-inp.addEventListener('change', function() {
-  if (inp.files[0]) pickFile(inp.files[0]);
+  zone.addEventListener('click', function() { inp.click(); });
+  zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('drag'); });
+  zone.addEventListener('dragleave', function() { zone.classList.remove('drag'); });
+  zone.addEventListener('drop', function(e) {
+    e.preventDefault(); zone.classList.remove('drag');
+    if (e.dataTransfer.files[0]) pickFile(e.dataTransfer.files[0]);
+  });
+  inp.addEventListener('change', function() {
+    if (inp.files[0]) pickFile(inp.files[0]);
+  });
 });
 
 function pickFile(f) {
@@ -477,7 +489,7 @@ function pickFile(f) {
   document.getElementById('btnT').textContent = '⚙️ Compilar archivo';
 }
 
-// ── PROGRESS ──
+// -- PROGRESS --
 function setPhase(ph) {
   var order = ['ps-lex','ps-sin','ps-sem','ps-db'];
   var pct   = {lex:25, sin:50, sem:75, db:100};
@@ -494,11 +506,11 @@ function setPhaseErr(fase) {
   var id = map[fase]; if (id) document.getElementById(id).className = 'ps error';
 }
 
-// ── AFD ──
+// -- AFD --
 var SD = {
   q0:{l:'q0 — Inicio', d:'Primer carácter decide el camino: letra→q1, dígito→q2, op→q4, inválido→qERR'},
   q1:{l:'q1 — Identificador/KW', d:'Consume letras, dígitos y _. Al terminar emite IDENTIFIER, KW_INSUMO, KW_CALCULO, etc.'},
-  q2:{l:'q2 — Número entero', d:'Consume dígitos. Un punto "." lleva a q3 (float). Otro carácter acepta como NUMBER_INT.'},
+  q2:{l:'q2 — Número entero', d:'Consume dígitos. Un punto (.) lleva a q3 (float). Otro carácter acepta como NUMBER_INT.'},
   q3:{l:'q3 — Parte decimal', d:'Consume dígitos tras el punto. Al terminar acepta como NUMBER_FLOAT.'},
   q4:{l:'q4 — Operador (aceptación)', d:'Acepta inmediatamente: OP_PLUS, OP_MINUS, OP_MUL, OP_DIV, LPAREN, RPAREN.'},
   q5:{l:'q5 — Aceptación general', d:'Token completo emitido. Regresa a q0 para el siguiente token.'},
@@ -539,26 +551,22 @@ function drawAFD(tabla) {
     s += '<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central" font-size="12" font-weight="700" fill="'+st(id)+'">'+lbl+'</text></g>';
     return s;
   }
-  function path(d,a,b,col,op,w) { return '<path d="'+d+'" fill="none" stroke="'+(col||lc(a,b))+'" stroke-width="'+(w||lw(a,b))+'" marker-end="url(#ar)" opacity="'+(op||lo(a,b))+'"/>'; }
+  function path(d,a,b) { return '<path d="'+d+'" fill="none" stroke="'+lc(a,b)+'" stroke-width="'+lw(a,b)+'" marker-end="url(#ar)" opacity="'+lo(a,b)+'"/>'; }
   function line(x1,y1,x2,y2,a,b) { return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+lc(a,b)+'" stroke-width="'+lw(a,b)+'" marker-end="url(#ar)" opacity="'+lo(a,b)+'"/>'; }
   function txt(x,y,t,c) { return '<text x="'+x+'" y="'+y+'" text-anchor="middle" font-size="9" fill="'+(c||'#6b7280')+'">'+t+'</text>'; }
 
   var svg = mk;
-  // entrada
   svg += '<line x1="20" y1="143" x2="48" y2="143" stroke="#9ca3af" stroke-width="1.5" marker-end="url(#ar)"/>';
   svg += '<polygon points="14,139 14,147 6,143" fill="#9ca3af"/>';
-  // estados
   svg += circ(74,143,24,'q0','q0',true) + txt(74,175,'inicio');
   svg += circ(200,65,24,'q1','q1',false) + txt(200,97,'ident/kw' + (used.q1?' ✓':''));
   svg += circ(200,150,24,'q2','q2',false) + txt(200,182,'int' + (used.q2?' ✓':''));
   svg += circ(200,232,24,'q3','q3',false) + txt(200,264,'float' + (used.q3?' ✓':''));
   svg += circ(340,85,24,'q4','q4',true)  + txt(340,117,'op' + (used.q4?' ✓':''));
   svg += circ(340,195,24,'q5','q5',true) + txt(340,227,'token ✓');
-  // qERR siempre rojo
   svg += '<g data-state="qe" style="cursor:pointer">';
   svg += '<circle cx="74" cy="248" r="20" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>';
   svg += '<text x="74" y="248" text-anchor="middle" dominant-baseline="central" font-size="9" font-weight="700" fill="#b91c1c">qERR</text></g>';
-  // transiciones
   svg += path('M94 130 Q144 92 176 72','q0','q1') + txt(126,86,'letra/_',used.q1?'#1d4ed8':'#9ca3af');
   svg += line(98,143,176,148,'q0','q2') + txt(136,136,'dígito',used.q2?'#5b21b6':'#9ca3af');
   svg += path('M92 128 Q200 54 316 78','q0','q4') + txt(200,48,'+−*/( )',used.q4?'#92400e':'#9ca3af');
@@ -572,22 +580,19 @@ function drawAFD(tabla) {
   svg += path('M224 68 Q284 104 316 180','q1','q5') + txt(290,112,'otro',used.q1?'#1d4ed8':'#9ca3af');
   svg += line(224,152,316,188,'q2','q5');
   svg += path('M224 228 Q278 228 316 202','q3','q5');
-  // leyenda
   svg += '<rect x="4" y="2" width="138" height="24" rx="4" fill="#f8faff" stroke="#e8eaf0" stroke-width="0.5"/>';
   svg += '<circle cx="16" cy="14" r="5" fill="#dbeafe" stroke="#2563eb" stroke-width="1.5"/>';
   svg += '<text x="25" y="18" font-size="9" fill="#374151">estado activo (compilación)</text>';
 
   document.getElementById('afd-svg').innerHTML = svg;
-  // Event delegation para los estados del AFD
   document.getElementById('afd-svg').querySelectorAll('[data-state]').forEach(function(el){
     el.addEventListener('click', function(){ qs(el.getAttribute('data-state')); });
   });
 }
 
-// Dibujar AFD inicial (todos inactivos)
 drawAFD(null);
 
-// ── SIMULADOR ──
+// -- SIMULADOR --
 function classify(t) {
   var kw = ['insumo','costo_empaque','calculo','costo_produccion','total'];
   if (kw.indexOf(t.toLowerCase()) >= 0) return {tipo:'KEYWORD', c:'#5b21b6', bg:'#ede9fe'};
@@ -611,7 +616,7 @@ function simular() {
     else {
       var r = classify(raw);
       rc.innerHTML = r.tipo === 'ERROR'
-        ? '<span style="color:#b91c1c">qERR — carácter inválido: <b>' + raw + '</b></span>'
+        ? '<span style="color:#b91c1c">qERR - caracter invalido: <b>' + raw + '</b></span>'
         : '<span style="background:'+r.bg+';color:'+r.c+';padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;font-family:monospace">'+r.tipo+'</span> → aceptado en q5';
     }
   }
@@ -621,10 +626,10 @@ function resetSim() {
   document.getElementById('sim-chars').innerHTML = '';
   document.getElementById('sim-result').innerHTML = '';
   document.getElementById('sim-input').value = '';
-  document.getElementById('state-info').textContent = 'Haz clic en un estado para ver su descripción.';
+  document.getElementById('state-info').textContent = 'Haz clic en un estado para ver su descripcion.';
 }
 
-// ── COMPILAR ──
+// -- COMPILAR --
 async function compilar() {
   if (!archivoFile) return;
   var t0 = Date.now();
@@ -660,46 +665,115 @@ async function compilar() {
   }
 }
 
-// ── FILL PANELS ──
+// ──────────────────────────────────────────────────────────────────────
+// FILL PANELS — Renderiza la sección 3 completa tras compilar
+// ──────────────────────────────────────────────────────────────────────
 function fillPanels(data) {
   var tabla = data.tabla_de_simbolos || [];
-  // tokens
-  var tm = {insumo:'tok-kw', costo_empaque:'tok-op', calculo:'tok-id'};
-  document.getElementById('tokens-live').innerHTML = tabla.map(function(r){
-    return '<span class="tok '+(tm[r.tipo]||'tok-id')+'">'+r.tipo.toUpperCase()+'</span>'
-         + '<span class="tok tok-id">'+r.nombre+'</span>'
-         + '<span class="tok tok-num">'+r.valor+'</span>';
-  }).join('');
+
+  // ── 3.1 LÉXICO: cuadritos de lexemas por instrucción ──
+  var TIPO_STYLE = {
+    insumo:        {bg:'#EDE9FE', fg:'#5B21B6', border:'#C4B5FD', label:'KW_INSUMO'},
+    costo_empaque: {bg:'#FEF3C7', fg:'#92400E', border:'#FCD34D', label:'KW_COSTO_EMP'},
+    calculo:       {bg:'#DCFCE7', fg:'#15803D', border:'#6EE7B7', label:'KW_CALCULO'},
+  };
+
+  function tokenCard(tipo, val, bgC, fgC, borderC) {
+    return '<div class="tok-card" style="border-color:'+borderC+'">'
+         + '<span class="tok-card-type" style="background:'+bgC+';color:'+fgC+'">'+tipo+'</span>'
+         + '<span class="tok-card-val">'+val+'</span>'
+         + '</div>';
+  }
+
+  function lexemasDeExpresion(expr) {
+    // Partir la expresión en tokens individuales
+    var parts = String(expr).match(/[a-zA-Z_][a-zA-Z0-9_]*|\d+\.\d+|\d+|[+\-*\/()]/g) || [expr];
+    return parts.map(function(t) {
+      if (/^[+\-*\/]$/.test(t))          return tokenCard('OP',      t,   '#FEF3C7','#92400E','#FCD34D');
+      if (/^[()]$/.test(t))              return tokenCard('PAREN',   t,   '#FCE7F3','#9D174D','#F9A8D4');
+      if (/^\d+\.\d+$/.test(t))          return tokenCard('FLOAT',   t,   '#DCFCE7','#166534','#6EE7B7');
+      if (/^\d+$/.test(t))               return tokenCard('INT',     t,   '#DCFCE7','#166534','#6EE7B7');
+      // palabras clave de dominio
+      if (t==='costo_produccion'||t==='total') return tokenCard('KW_DOM', t, '#FEF3C7','#92400E','#FCD34D');
+      return tokenCard('ID', t, '#DBEAFE','#1E40AF','#93C5FD');
+    }).join('');
+  }
+
+  var tokHtml = '';
+  tabla.forEach(function(r, i) {
+    var ts = TIPO_STYLE[r.tipo] || {bg:'#F3F4F6',fg:'#374151',border:'#D1D5DB',label:'KW'};
+    var filaNum = r.fila || (i + 2);
+
+    tokHtml += '<div class="tok-section">';
+    // Encabezado de fila
+    tokHtml += '<div class="tok-section-lbl">Fila '+filaNum+' <span>'+r.tipo+'</span></div>';
+    // Fila de cuadritos
+    tokHtml += '<div style="display:flex;flex-wrap:wrap;align-items:flex-start;gap:2px">';
+    // Columna 1: Tipo_Registro
+    tokHtml += tokenCard(ts.label, r.tipo, ts.bg, ts.fg, ts.border);
+    // Separador
+    tokHtml += '<div style="display:flex;align-items:center;color:#D1D5DB;font-size:16px;margin:0 2px;align-self:center">→</div>';
+    // Columna 2: Nombre_Variable
+    tokHtml += tokenCard('ID', r.nombre, '#DBEAFE','#1E40AF','#93C5FD');
+    // Separador
+    tokHtml += '<div style="display:flex;align-items:center;color:#D1D5DB;font-size:16px;margin:0 2px;align-self:center">=</div>';
+    // Columna 3: Valor_Asignacion → lexemas
+    tokHtml += lexemasDeExpresion(r.expresion);
+    tokHtml += '</div></div>';
+  });
+  document.getElementById('tokens-live').innerHTML = tokHtml || '<span class="ph">Sin tokens</span>';
+
   // AFD dinámico
   drawAFD(tabla);
-  // AST preview
+
+  // ── 3.2 SINTÁCTICO: AST preview de texto ──
+  var nl = String.fromCharCode(10);
   var ast = '';
-  tabla.forEach(function(r){
+  tabla.forEach(function(r) {
     if (r.tipo === 'calculo') {
-      var nl = String.fromCharCode(10); ast += 'ASIGNACION' + nl + '  ID: ' + r.nombre + nl + '  EXPR: ' + r.expresion + nl + '  eval = ' + r.valor + nl + nl;
+      var opM = r.expresion.match(/([+\-*\/])/);
+      var op  = opM ? opM[1] : '?';
+      var parts = r.expresion.split(/[+\-*\/]/).map(function(s){return s.trim();}).filter(Boolean);
+      ast += 'ASIGNACION' + nl
+           + '  ├─ TIPO:  calculo' + nl
+           + '  ├─ ID:    ' + r.nombre + nl
+           + '  └─ EXPR (' + op + ')' + nl
+           + (parts[0] ? '       ├─ IZQ: ' + parts[0] + nl : '')
+           + (parts[1] ? '       └─ DER: ' + parts[1] + nl : '')
+           + '  ↳ eval = ' + r.valor + nl + nl;
+    } else {
+      ast += 'ASIGNACION' + nl
+           + '  ├─ TIPO:  ' + r.tipo + nl
+           + '  ├─ ID:    ' + r.nombre + nl
+           + '  └─ VALOR: ' + r.expresion + '  →  ' + r.valor + nl + nl;
     }
   });
-  document.getElementById('ast-preview').innerHTML = ast || '(sin expresiones de cálculo)';
+  document.getElementById('ast-preview').textContent = ast || '(sin datos)';
+
   // instrucciones
   document.getElementById('inst-live').innerHTML = tabla.map(function(r){
-    return '<div class="inst-row"><span class="inst-fila">F'+r.fila+'</span>'
+    return '<div class="inst-row"><span class="inst-fila">F'+(r.fila||'?')+'</span>'
          + '<span class="inst-tipo">'+r.tipo+'</span>'
          + '<span class="inst-nom">'+r.nombre+'</span>'
          + '<span class="inst-val">'+r.valor+'</span></div>';
   }).join('');
-  // tabla símbolos
+
+  // ── 3.3 SEMÁNTICO: tabla de símbolos ──
   var symRows = tabla.map(function(r){
     var cls = r.tipo==='insumo' ? '' : (r.tipo==='costo_empaque' ? 'row-cos' : 'row-cal');
     return '<tr class="'+cls+'"><td>'+r.nombre+'</td><td>'+r.tipo+'</td><td>'+r.expresion+'</td><td><b>'+r.valor+'</b></td></tr>';
   }).join('');
   document.getElementById('sym-live').innerHTML =
-    '<div class="sym-scroll"><table class="sym-tbl"><tr><th>Nombre</th><th>Tipo</th><th>Expresión</th><th>Valor</th></tr>' + symRows + '</table></div>';
+    '<div style="overflow-x:auto;width:100%;display:block"><table class="sym-tbl" style="width:max-content;min-width:100%"><tr><th>Nombre</th><th>Tipo</th><th>Expresión</th><th>Valor</th></tr>' + symRows + '</table></div>';
+
   // JSON out
   document.getElementById('json-out').textContent = JSON.stringify(data.resumen||{}, null, 2);
+
   // stats
   document.getElementById('cnt-ins').textContent = tabla.filter(function(r){ return r.tipo==='insumo'; }).length;
   document.getElementById('cnt-cos').textContent = tabla.filter(function(r){ return r.tipo==='costo_empaque'; }).length;
   document.getElementById('cnt-cal').textContent = tabla.filter(function(r){ return r.tipo==='calculo'; }).length;
+
   // sync dot
   document.getElementById('syncDot').style.background = data.id_documento ? '#22c55e' : '#f59e0b';
 }
@@ -721,7 +795,7 @@ function renderResultsPage() {
   okEl.style.display = 'block';
   var tabla = data.tabla_de_simbolos || [];
   var elapsed = compilElapsed;
-  // JSON
+
   var jsonObj = {
     status: 'SUCCESS',
     timestamp: new Date().toISOString(),
@@ -729,10 +803,10 @@ function renderResultsPage() {
     inventory_compilation: tabla.map(function(r){ return {type:r.tipo, id:r.nombre, value:r.valor, expr:r.expresion}; })
   };
   document.getElementById('json-full').innerHTML = syntaxHL(JSON.stringify(jsonObj, null, 2));
-  // métricas (fijas, no aumentan)
+
   document.getElementById('m-tokens').textContent = tabla.length * 3;
   document.getElementById('m-tiempo').textContent = elapsed + 'ms';
-  // distribución
+
   var ins = tabla.filter(function(r){ return r.tipo==='insumo'; }).length;
   var cos = tabla.filter(function(r){ return r.tipo==='costo_empaque'; }).length;
   var cal = tabla.filter(function(r){ return r.tipo==='calculo'; }).length;
@@ -741,14 +815,14 @@ function renderResultsPage() {
     distRow('Insumos', ins, tot, '#2563eb') +
     distRow('Costos',  cos, tot, '#6b7280') +
     distRow('Cálculos',cal, tot, '#374151');
-  // validación
+
   document.getElementById('val-row').style.display = 'flex';
   document.getElementById('val-dot').style.background = data.id_documento ? '#22c55e' : '#f59e0b';
   document.getElementById('val-h').textContent = data.id_documento ? 'Validación Exitosa' : 'Sin persistencia';
   document.getElementById('val-p').textContent = data.id_documento
     ? 'Sincronizado con MongoDB Atlas · Clúster Prod-01'
     : 'Configura MONGODB_URI para sincronizar';
-  // cards
+
   var res = data.resumen || {};
   var keys = Object.keys(res);
   if (keys.length) {
@@ -757,7 +831,7 @@ function renderResultsPage() {
       return '<div class="rc"><div class="rc-lbl">'+k+'</div><div class="rc-val">'+Number(res[k]).toLocaleString('es-PE',{minimumFractionDigits:2,maximumFractionDigits:2})+'</div></div>';
     }).join('');
   }
-  // AST
+
   setTimeout(function(){ drawASTsvg(tabla); }, 80);
 }
 
@@ -775,7 +849,9 @@ function syntaxHL(json) {
     .replace(/:\s*(\d+\.?\d*)/g, ': <span style="color:#fab387">$1</span>');
 }
 
-// ── AST SVG DINÁMICO ──
+// ──────────────────────────────────────────────────────────────────────
+// AST SVG DINÁMICO — árbol visual con nodos bien etiquetados
+// ──────────────────────────────────────────────────────────────────────
 function drawASTsvg(tabla) {
   var wrap = document.getElementById('ast-wrap');
   if (!tabla || !tabla.length) {
@@ -783,48 +859,37 @@ function drawASTsvg(tabla) {
     return;
   }
 
-  // Constantes de layout
-  var NW = 120, NH = 32, VGAP = 56;
-  // Cada instrucción ocupa un "slot" fijo en X.
-  // El slot debe contener: [tipo] [gap] [valor/expr] con margen entre instrucciones.
-  // Para cálculos también hay operandos debajo de expr, cada uno de NW.
-  // Slot mínimo = NW*2 + 3 gaps de 20px + 30px margen entre instrucciones
-  var SLOT = NW * 2 + 20 * 3 + 30;
+  var NW = 130, NH = 34, VGAP = 64;
+  var SLOT = NW * 2 + 28 * 3 + 40;
   var n = tabla.length;
-  var PAD = 40;
-  var W = Math.max(800, n * SLOT + PAD * 2);
+  var PAD = 50;
+  var W = Math.max(860, n * SLOT + PAD * 2);
 
-  // Filas Y (centros)
-  var Y0 = 30 + NH/2;                  // PROGRAMA
-  var Y1 = Y0 + NH + VGAP;             // nombre_variable
-  var Y2 = Y1 + NH + VGAP;             // tipo  |  valor/expr(op)
-  var Y3 = Y2 + NH + VGAP;             // operando_izq | operando_der  (solo calculos)
+  var Y0 = 36 + NH/2;
+  var Y1 = Y0 + NH + VGAP;
+  var Y2 = Y1 + NH + VGAP;
+  var Y3 = Y2 + NH + VGAP;
   var hasCalc = tabla.some(function(r){ return r.tipo === 'calculo'; });
-  var H = (hasCalc ? Y3 + NH/2 + 30 : Y2 + NH/2 + 30);
+  var H = (hasCalc ? Y3 + NH/2 + 36 : Y2 + NH/2 + 36);
 
-  // ── helpers SVG ──
-  function rect(cx, cy, w, h, fg, bg, radius) {
-    radius = radius || 6;
+  function rect(cx, cy, w, h, bg, stroke) {
     return '<rect x="'+(cx-w/2)+'" y="'+(cy-h/2)+'" width="'+w+'" height="'+h
-         + '" rx="'+radius+'" fill="'+bg+'" stroke="#d1d5db" stroke-width="1.2"/>';
+         + '" rx="7" fill="'+bg+'" stroke="'+(stroke||'#d1d5db')+'" stroke-width="1.4"/>';
   }
-  function txt(cx, cy, lbl, fg, fs, fw) {
-    fs = fs || 11; fw = fw || 600;
-    // Calcular cuántos chars caben (aprox 6.2px por char a 11px)
-    var maxCh = Math.floor((NW - 12) / (fs * 0.62));
+  function label(cx, cy, lbl, fg, fs, fw, maxW) {
+    fs = fs || 11; fw = fw || 600; maxW = maxW || NW;
+    var maxCh = Math.floor((maxW - 14) / (fs * 0.6));
     var s = String(lbl);
     if (s.length > maxCh) s = s.substring(0, maxCh - 1) + '…';
     return '<text x="'+cx+'" y="'+cy+'" text-anchor="middle" dominant-baseline="central"'
          + ' font-size="'+fs+'" font-weight="'+fw+'" fill="'+fg+'"'
          + ' font-family="-apple-system,BlinkMacSystemFont,sans-serif">'+s+'</text>';
   }
-  function node(cx, cy, w, lbl, fg, bg) {
-    return rect(cx, cy, w, NH, fg, bg) + txt(cx, cy, lbl, fg);
+  function node(cx, cy, w, txt, fg, bg, stroke) {
+    return rect(cx, cy, w, NH, bg, stroke) + label(cx, cy, txt, fg, 11, 600, w);
   }
   function edge(x1, y1, x2, y2) {
-    return '<line x1="'+Math.round(x1)+'" y1="'+Math.round(y1)
-         + '" x2="'+Math.round(x2)+'" y2="'+Math.round(y2)
-         + '" stroke="#cbd5e1" stroke-width="1.2"/>';
+    return '<line x1="'+Math.round(x1)+'" y1="'+Math.round(y1)+'" x2="'+Math.round(x2)+'" y2="'+Math.round(y2)+'" stroke="#CBD5E1" stroke-width="1.4"/>';
   }
 
   var rootX = W / 2;
@@ -832,60 +897,63 @@ function drawASTsvg(tabla) {
           + ' xmlns="http://www.w3.org/2000/svg"'
           + ' style="display:block;font-family:-apple-system,sans-serif">';
 
-  // ── Nodo raíz PROGRAMA ──
-  svg += node(rootX, Y0, NW + 40, 'PROGRAMA', '#1e40af', '#dbeafe');
+  // Nodo raíz PROGRAMA
+  svg += node(rootX, Y0, NW + 60, 'PROGRAMA', '#1e40af', '#dbeafe', '#93c5fd');
 
   tabla.forEach(function(r, i) {
-    // Centro X del slot de esta instrucción
     var cx = PAD + i * SLOT + SLOT / 2;
+    var GAP = 28;
+    var lx = cx - GAP/2 - NW/2;
+    var rx = cx + GAP/2 + NW/2;
 
-    // Dentro del slot: tipo a la izquierda, valor/expr a la derecha
-    // Cada uno centrado en su mitad del slot (con gap en medio)
-    var GAP = 20;
-    var lx = cx - GAP/2 - NW/2;   // centro del nodo izquierdo (tipo)
-    var rx = cx + GAP/2 + NW/2;   // centro del nodo derecho (valor/expr)
-
-    // ── Fila 1: nombre_variable ──
+    // Fila 1: nombre_variable
     svg += edge(rootX, Y0 + NH/2, cx, Y1 - NH/2);
-    svg += node(cx, Y1, NW, r.nombre, '#1e293b', '#f1f5f9');
+    svg += node(cx, Y1, NW + 10, r.nombre, '#1e293b', '#e0e7ff', '#a5b4fc');
 
-    // ── Fila 2: tipo | valor ──
-    var tipoBg = r.tipo==='insumo' ? '#ede9fe' : r.tipo==='costo_empaque' ? '#fef3c7' : '#dcfce7';
-    var tipoFg = r.tipo==='insumo' ? '#5b21b6' : r.tipo==='costo_empaque' ? '#92400e' : '#15803d';
+    // Subtítulo valor bajo el nodo de nombre (para insumo/costo)
+    if (r.tipo !== 'calculo') {
+      svg += label(cx, Y1 + NH/2 + 9, '= ' + r.valor, '#64748b', 9, 500, NW+10);
+    }
+
+    // Fila 2: tipo | valor/expr
+    var tipoBg     = r.tipo==='insumo' ? '#c4b5fd' : r.tipo==='costo_empaque' ? '#fcd34d' : '#6ee7b7';
+    var tipoFg     = r.tipo==='insumo' ? '#4c1d95' : r.tipo==='costo_empaque' ? '#78350f' : '#064e3b';
+    var tipoStroke = r.tipo==='insumo' ? '#8b5cf6' : r.tipo==='costo_empaque' ? '#f59e0b' : '#10b981';
 
     svg += edge(cx, Y1 + NH/2, lx, Y2 - NH/2);
-    svg += node(lx, Y2, NW, r.tipo, tipoFg, tipoBg);
+    svg += node(lx, Y2, NW, r.tipo, tipoFg, tipoBg, tipoStroke);
 
     svg += edge(cx, Y1 + NH/2, rx, Y2 - NH/2);
 
     if (r.tipo === 'calculo') {
       var opM = r.expresion.match(/([+\-*\/])/);
       var op  = opM ? opM[1] : '?';
-      svg += node(rx, Y2, NW, 'expr(' + op + ')', '#1d4ed8', '#dbeafe');
+      svg += node(rx, Y2, NW, 'expr  (' + op + ')', '#1d4ed8', '#dbeafe', '#93c5fd');
 
-      // ── Fila 3: operandos ──
+      // Fila 3: operandos izq y der
       var parts = r.expresion.split(/[+\-*\/]/).map(function(s){ return s.trim(); }).filter(Boolean);
-      // Los operandos se colocan debajo de rx, separados
-      var SEP = NW + 16;
+      var SEP = NW + 18;
       var ox1 = rx - SEP/2;
       var ox2 = rx + SEP/2;
-      if (parts.length >= 1) {
+      if (parts[0]) {
         svg += edge(rx, Y2 + NH/2, ox1, Y3 - NH/2);
-        svg += node(ox1, Y3, NW, parts[0], '#334155', '#f8fafc');
+        svg += node(ox1, Y3, NW, parts[0], '#334155', '#f8fafc', '#cbd5e1');
+        svg += label(ox1, Y3 + NH/2 + 9, 'operando izq.', '#94a3b8', 9, 400, NW);
       }
-      if (parts.length >= 2) {
+      if (parts[1]) {
         svg += edge(rx, Y2 + NH/2, ox2, Y3 - NH/2);
-        svg += node(ox2, Y3, NW, parts[1], '#334155', '#f8fafc');
+        svg += node(ox2, Y3, NW, parts[1], '#334155', '#f8fafc', '#cbd5e1');
+        svg += label(ox2, Y3 + NH/2 + 9, 'operando der.', '#94a3b8', 9, 400, NW);
       }
+      // valor evaluado al lado del nodo expr
+      svg += label(rx, Y2 + NH/2 + 9, '→ ' + r.valor, '#059669', 9, 600, NW);
     } else {
-      // insumo/costo: valor numérico directamente
-      svg += node(rx, Y2, NW, String(r.valor), '#334155', '#f8fafc');
+      svg += node(rx, Y2, NW, String(r.expresion), '#334155', '#f8fafc', '#cbd5e1');
+      svg += label(rx, Y2 + NH/2 + 9, 'valor literal', '#94a3b8', 9, 400, NW);
     }
   });
 
   svg += '</svg>';
-
-  // El wrapper tiene altura fija + scroll horizontal
   wrap.style.overflowX = 'auto';
   wrap.style.overflowY = 'auto';
   wrap.style.maxHeight = '320px';
